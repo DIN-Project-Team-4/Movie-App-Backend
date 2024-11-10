@@ -22,6 +22,7 @@ const AuthMiddleware = ((req, res, next) => {
       //assign userId to env variable to access from other modules
       process.env.USER_ID = decodedToken.userId;
       process.env.USER_EMAIL = decodedToken.userEmail;
+      process.env.USER_NAME = decodedToken.userName;
       
     
       if (decodedToken.exp && Date.now() >= decodedToken.exp * 1000) {
@@ -44,6 +45,9 @@ const AuthMiddleware = ((req, res, next) => {
   const getUserEmail = (() => {
     return process.env.USER_EMAIL    
   })
+  const getUserName = (() => {
+    return process.env.USER_NAME    
+  })
 
 
-  module.exports = { AuthMiddleware, getUserId, getUserEmail };
+  module.exports = { AuthMiddleware, getUserId, getUserEmail,getUserName };

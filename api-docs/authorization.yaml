@@ -1,0 +1,63 @@
+tags:
+  - name: Authorization
+    description: "Movie App maintenance endpoints"
+paths:
+  /auth:
+    post:
+      summary: User authorization
+      description: Bearer token not required
+      tags:
+        - Authorization
+      requestBody:
+        required: true
+        description: Payload to validate users and generate access token
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                userEmail:
+                  type: string
+                  default: ""
+                  description: User email address
+                password:
+                  type: string
+                  default: ""
+                  description: User password
+                username:
+                  type: string
+                  default: ""
+                  description: User Name
+              required:
+                - userEmail
+                - password
+      responses:
+        '200':
+          description: Successful
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  userId:
+                    type: number
+                    description: Unique id
+                  userEmail:
+                    type: string
+                    description: User email address
+                  userName:
+                    type: string
+                    description: User name
+                  accessToken: 
+                    type: string
+                    description: Access token
+        '400':
+          description: Bad request
+        '403':
+          description: Forbidden
+        '404':
+          description: Not found
+        '500':
+          description: Server error  
+
+ 
