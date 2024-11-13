@@ -1,4 +1,4 @@
-const {createUser, findOneUser, findUsers } = require('../models/userModel.js')
+const {createUser, findOneUser, findUsers, lastLogin,findOneUserbyEmail } = require('../models/userModel.js')
 
 const onRegister = (async (req, res) => {
     const requestBody = req.body;
@@ -7,6 +7,18 @@ const onRegister = (async (req, res) => {
         !requestBody.hasOwnProperty('username')){
 
         return res.status(400).send({message: 'Invalid request, missing one or more required field(s).'});  
+    }
+
+    // Validate email format
+    const emailRegex = /^[a-zA-Z0-9._-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,6}$/;
+    if (!emailRegex.test(requestBody.userEmail)) {
+        return res.status(400).send({ message: 'Invalid email format.' });
+    }
+
+    // Validate password (at least one uppercase letter and one number)
+    const passwordRegex = /^(?=.*[A-Z])(?=.*\d).+$/;
+    if (!passwordRegex.test(requestBody.password)) {
+        return res.status(400).send({ message: 'Password must contain at least one uppercase letter and one number.' });
     }
 
     try{
@@ -36,6 +48,24 @@ const onFindOneUser = (async (req, res) => {
     return;
 })   
 
+const onFindOneUserbyEmail = (async (req, res) => {
+    const requestBody = req.body;
+    
+    //check for required poperies 
+    if (!requestBody.hasOwnProperty('email')){
+        return res.status(400).send({message: 'Invalid request, missing user email.'});  
+    }
+    
+    try{
+        const result = await findOneUserbyEmail(requestBody.hasOwnProperty('email'));
+        
+        res.status(200).send(result);  
+    } catch (error) {
+        res.status(error.statusCode).send({message: error.message});  
+    }
+    return;
+})
+
 const onFindUsers = (async (req, res) => {    
     try{
         const result = await findUsers();
@@ -47,6 +77,17 @@ const onFindUsers = (async (req, res) => {
     return;
 })  
 
+const onLastLogin = (async (req, res) => {
+    const userId = req.params["userId"];  
+    try{
+        const result = await lastLogin(userId);
+        
+        res.status(200).send(result);  
+    } catch (error) {
+        res.status(error.statusCode).send({message: error.message});  
+    }
+    return;
+})
 
 
-module.exports = {onRegister, onFindOneUser, onFindUsers};
+module.exports = {onRegister, onFindOneUser, onFindUsers, onLastLogin,onFindOneUserbyEmail };
