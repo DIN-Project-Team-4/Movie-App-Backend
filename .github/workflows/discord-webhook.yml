@@ -1,0 +1,55 @@
+name: Discord Notifications
+
+on: 
+  push:
+    branches:
+      - main
+  issues:
+    types: [opened, closed, labeled, unlabeled]
+  issue_comment:
+    types: [created]
+
+jobs:
+  discord_notification:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Send push notification to Discord
+      if: github.event_name == 'push'
+      env:
+        DISCORD_WEBHOOK_URL: ${{ secrets.DISCORD_WEBHOOK_URL }}
+      run: |
+        curl -H "Content-Type: application/json" \
+          -X POST \
+          -d "{\"content\": \"📦 **${{ github.actor }}** pushed to **${{ github.repository }}**: [View commit](${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}/commit/${GITHUB_SHA})\"}" \
+          $DISCORD_WEBHOOK_URL
+
+    - name: Send issue opened notification to Discord
+      if: github.event_name == 'issues' && github.event.action == 'opened'
+      env:
+        DISCORD_WEBHOOK_URL: ${{ secrets.DISCORD_WEBHOOK_URL }}
+      run: |
+        curl -H "Content-Type: application/json" \
+          -X POST \
+          -d "{\"content\": \"📝 Issue opened by **${{ github.actor }}** in **${{ github.repository }}**: [${{ github.event.issue.title }}](${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}/issues/${{ github.event.issue.number }})\"}" \
+          $DISCORD_WEBHOOK_URL
+
+    - name: Send issue closed notification to Discord
+      if: github.event_name == 'issues' && github.event.action == 'closed'
+      env:
+        DISCORD_WEBHOOK_URL: ${{ secrets.DISCORD_WEBHOOK_URL }}
+      run: |
+        curl -H "Content-Type: application/json" \
+          -X POST \
+          -d "{\"content\": \"✅ Issue closed by **${{ github.actor }}** in **${{ github.repository }}**: [${{ github.event.issue.title }}](${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}/issues/${{ github.event.issue.number }})\"}" \
+          $DISCORD_WEBHOOK_URL
+
+    - name: Send issue comment notification to Discord
+      if: github.event_name == 'issue_comment' && github.event.action == 'created'
+      env:
+        DISCORD_WEBHOOK_URL: ${{ secrets.DISCORD_WEBHOOK_URL }}
+      run: |
+        curl -H "Content-Type: application/json" \
+          -X POST \
+          -d "{\"content\": \"💬 New comment by **${{ github.actor }}** on issue in **${{ github.repository }}**: [${{ github.event.issue.title }}](${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}/issues/${{ github.event.issue.number }}):\n\n${{ github.event.comment.body }}\"}" \
+          $DISCORD_WEBHOOK_URL
