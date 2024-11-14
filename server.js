@@ -7,6 +7,7 @@ const app = express(); // Create an instance of Express
 const cors = require('cors');
 const swaggerDocs = require('./swagger');
 const path = require('path');
+const movieDetails = require('./routes/movieDetails')
 
 
 const PORT = process.env.PORT || 3001;
@@ -19,6 +20,7 @@ app.use(express.urlencoded({ limit: '10mb', extended: true }));
 app.use(express.text({ limit: "10mb" }));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
+app.use('/api/movies', movieDetails);
 
 //enable accessing static contents
 app.use((req, res, next) => {
@@ -36,11 +38,11 @@ app.all("/", (req, res) => {
   const htmlString = 
     `<html>
       <head>
-        <title>cineScope REST API's</title>
+        <title>CineScope REST API's</title>
       </head>
       <body>
         <center>
-          <h1>cineScope</h1>
+          <h1>CineScope</h1>
           <hr />
           <br />
           <br/>
@@ -75,7 +77,7 @@ app.use((err, req, res, next) => {
 });
 
 app.listen(PORT, () => {
-  console.log(`cineScope API server listens on port ${PORT}`);   
+  console.log(`CineScope API server listens on port ${PORT}`);   
 })
 
 
