@@ -6,7 +6,7 @@ const options = {
   definition: {
     openapi: '3.0.0',
     info: {
-      title: 'cineScope REST API',
+      title: 'CineScope REST API',
       version: '1.0.0',
       description: 'Endpoints documentation',
       contact: {
@@ -31,7 +31,7 @@ const options = {
     servers: [
       {
         url: `${process.env.SERVER}:${process.env.PORT}/api/v1`, // Include the base path in the URL
-        description: 'cineScope REST API',
+        description: 'CineScope REST API',
       },
     ],
   },
