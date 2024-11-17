@@ -7,7 +7,7 @@ const app = express(); // Create an instance of Express
 const cors = require('cors');
 const swaggerDocs = require('./swagger');
 const path = require('path');
-const movieDetails = require('./routes/movieDetails')
+//const movieDetails = require('./routes/movieDetails')
 const groupRoute = require('./routes/groupRoute');
 
 
@@ -22,7 +22,7 @@ app.use(express.urlencoded({ limit: '10mb', extended: true }));
 app.use(express.text({ limit: "10mb" }));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
-app.use('/api/movies', movieDetails);
+//app.use('/api/movies', movieDetails);
 
 //enable accessing static contents
 app.use((req, res, next) => {
