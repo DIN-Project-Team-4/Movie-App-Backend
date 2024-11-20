@@ -1,4 +1,4 @@
-const {addReview, alreadyReviewed} = require("../models/reviewModel.js")
+const {addReview, alreadyReviewed, getReviews} = require("../models/reviewModel.js")
 
 // Function to create a new review
 const createReview = async (req, res) => {
@@ -35,4 +35,21 @@ const createReview = async (req, res) => {
     }
 }
 
-module.exports = createReview
+
+//Function to get all the reviews by movie ID
+const readReviews = async (req,res) => {
+
+    if (!Number.isInteger(req.body.movieId)) {
+        return res.status(400).json({error: 'Movie ID is invalid'})
+    }
+
+    //Get all the reviews
+    try{
+        const result = await  getReviews(req.body.movieId)
+        return res.status(200).json(result)
+    }catch(error){
+        return res.status(error.status || 500).json({error: error.message})
+    }
+}
+
+module.exports = {createReview, readReviews}
