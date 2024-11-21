@@ -1,4 +1,4 @@
-const {addToFavourites, alreadyInFavourites, readFavourites} = require("../models/favouritesModel.js")
+const {addToFavourites, alreadyInFavourites, readFavourites, removeFromFavourites} = require("../models/favouritesModel.js")
 
 // Function to add a new movie to favourites
 const insertToFavourites = async (req, res) => {
@@ -48,4 +48,21 @@ const getFavourites = async (req, res) => {
     }
 }
 
-module.exports = {insertToFavourites, getFavourites}
+// Function to delete a given movie from favourites for a given user
+const deleteFromFavourites = async (req, res) => {
+    const {movieId, userId} = req.body;
+
+    if (userId === null) {
+        return res.status(400).json({error: 'User ID cannot be null'})
+    }
+
+    // Delete movie from favourites table in database for this user
+    try {
+        const result = await removeFromFavourites(movieId, userId)
+        return res.status(200).json(result)
+    } catch (error) {
+        return res.status(error.status || 500).json({error: error.message})
+    }
+}
+
+module.exports = {insertToFavourites, getFavourites, deleteFromFavourites}

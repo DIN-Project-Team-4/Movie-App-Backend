@@ -41,4 +41,19 @@ const readFavourites = async (userId) => {
     return result.rows 
 }
 
-module.exports = {addToFavourites, alreadyInFavourites, readFavourites}
+// Function to delete a favourite movie from a user
+const removeFromFavourites = async (movieId, userId) => {
+    const sql = 'delete from "Favorit" where movie_id = ($1) and user_user_id = ($2) returning *'
+    let result
+    try {
+        result = await queryDb(sql, [movieId, userId])
+        if (!result.rows.length) {
+            throw new Error('Failed to remove movie from favourites for this user')
+        }
+    } catch (error) {
+        throw new Error(`Error deleting from favourites: ${error.message}`);
+    }
+    return result.rows
+}
+
+module.exports = {addToFavourites, alreadyInFavourites, readFavourites, removeFromFavourites}
