@@ -29,4 +29,16 @@ const alreadyInFavourites = async (movieId, userId) => {
     return result.rows.length > 0
 }
 
-module.exports = {addToFavourites, alreadyInFavourites}
+// Function to get the list of favourites for a given user
+const readFavourites = async (userId) => {
+    const sql = 'select * from "Favorit" where user_user_id = ($1)'
+    let result
+    try {
+        result = await queryDb(sql, [userId])
+    } catch (error) {
+        throw new Error(`Error getting favourites: ${error.message}`);
+    }
+    return result.rows 
+}
+
+module.exports = {addToFavourites, alreadyInFavourites, readFavourites}

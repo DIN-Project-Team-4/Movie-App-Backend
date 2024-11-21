@@ -1,8 +1,10 @@
 const express = require('express');
-const {insertToFavourites} = require("../controllers/favouritesController.js")
+const {insertToFavourites, getFavourites} = require("../controllers/favouritesController.js");
+const { AuthMiddleware } = require('../middleware/authMiddleware.js');
 
 const router = express.Router()
 
-router.post('/movie', insertToFavourites)
+router.post('/movie', AuthMiddleware, insertToFavourites)
+router.get('/profile', AuthMiddleware, getFavourites)
 
 module.exports = router
