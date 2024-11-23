@@ -14,7 +14,7 @@ const createUser = ((user) => {
 
             //check email is already registered
             if (dbResult.rows.length){
-                reject({statusCode: 302, message: 'Email address already registered with CineScope.'});
+                reject({statusCode: 302, message: 'Email address already registered with cineScope.'});
                 return;
             }
 
@@ -24,20 +24,19 @@ const createUser = ((user) => {
             
             //save member profile
             //construct sql string
-            let sql = 'insert into "User" (email, password, username, created_at,last_login) ' 
-            sql += 'values ($1, $2, $3, $4,$5) returning '
-            sql += 'user_id, email, username, created_at,last_login ' 
+            let sql = 'insert into "User" (email, password, username, created_at) ' 
+            sql += 'values ($1, $2, $3, $4) returning '
+            sql += 'user_id, email, username, created_at' 
 
             //save member and create the profile
             const dbResultSave = await queryDb(sql, 
-                [user.userEmail, hashedPassword, user.username, new Date(),new Date()]);
+                [user.userEmail, hashedPassword, user.username, new Date()]);
 
             const returnJson = {
                 userId: dbResultSave.rows[0].user_id,
                 userEmail: dbResultSave.rows[0].email,
                 username: dbResultSave.rows[0].username,
-                createDate: dbResultSave.rows[0].created_at,
-                last_login:dbResultSave.rows[0].last_login
+                createDate: dbResultSave.rows[0].created_at
             }
             
             resolve(returnJson);
@@ -54,7 +53,7 @@ const findOneUser = ((userId) => {
         try{
             //Searching for user
             //construct sql string
-            const sql = `select user_id, email, username, created_at from "User" where user_id=$1`
+            const sql = `select user_id, email, username, last_login, created_at from "User" where user_id=$1`
     
             //update member and activate the profile
             const dbResult = await queryDb(sql, [userId]);
@@ -69,6 +68,7 @@ const findOneUser = ((userId) => {
                 userId: dbResult.rows[0].user_id,
                 userEmail: dbResult.rows[0].email,
                 username: dbResult.rows[0].username,
+                lastLoginDate: dbResult.rows[0].last_login,
                 createDate: dbResult.rows[0].created_at               
             }
     
@@ -86,7 +86,7 @@ const findOneUserbyEmail = ((email) => {
         try{
             //Searching for user
             //construct sql string
-            const sql = `select user_id, email, username, created_at from "User" where email=$1`
+            const sql = `select user_id, email, username, last_login, created_at from "User" where email=$1`
     
             //update member and activate the profile
             const dbResult = await queryDb(sql, [email]);
@@ -102,9 +102,9 @@ const findOneUserbyEmail = ((email) => {
                 userId: dbResult.rows[0].user_id,
                 userEmail: dbResult.rows[0].email,
                 username: dbResult.rows[0].username,
-                createDate: dbResult.rows[0].created_at,
-                last_login: dbResult.rows[0].last_login,
-                shared__url: dbResult.rows[0].shared__url               
+                sharedUrl: dbResult.rows[0].shared_url,               
+                lastLoginDate: dbResult.rows[0].last_login,
+                createDate: dbResult.rows[0].created_at
             }
     
             resolve(returnJson);
@@ -116,12 +116,12 @@ const findOneUserbyEmail = ((email) => {
     })
 })
 
-const findUsers = ((userId) => {
+const findUsers = (() => {
     return new Promise(async(resolve,reject) => {
         try{
             //Searching for user
             //construct sql string
-            const sql = `select user_id, email, username, created_at from "User" order by user_id`
+            const sql = `select user_id, email, username, last_login, created_at from "User" order by user_id`
     
             //update member and activate the profile
             const dbResult = await queryDb(sql);
@@ -132,13 +132,13 @@ const findUsers = ((userId) => {
                 return;
             }
 
-
             let returnJson = []
             dbResult.rows.map(async (row)=> {
                 returnJson.push({
                     userId: row.user_id,
                     userEmail: row.email,
                     username: row.username,
+                    lastLoginDate: row.last_login,
                     createDate: row.created_at
                 })
             });
@@ -160,7 +160,7 @@ const lastLogin = ((userId) => {
             const sql = `update "User" set last_login =$1 where user_id =$2 returning *`
     
             //update users last login
-            const dbResult = await queryDb(sql,[user_id,new Date()]);
+            const dbResult = await queryDb(sql,[user_id, new Date()]);
     
             //check fetched records
             if (!dbResult.rows.length){

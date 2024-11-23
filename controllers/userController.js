@@ -49,15 +49,15 @@ const onFindOneUser = (async (req, res) => {
 })   
 
 const onFindOneUserbyEmail = (async (req, res) => {
-    const requestBody = req.body;
+    const requestQuery = req.query.email;
     
     //check for required poperies 
-    if (!requestBody.hasOwnProperty('email')){
+    if (!requestQuery){
         return res.status(400).send({message: 'Invalid request, missing user email.'});  
     }
     
     try{
-        const result = await findOneUserbyEmail(requestBody.hasOwnProperty('email'));
+        const result = await findOneUserbyEmail(requestQuery);
         
         res.status(200).send(result);  
     } catch (error) {
@@ -67,9 +67,16 @@ const onFindOneUserbyEmail = (async (req, res) => {
 })
 
 const onFindUsers = (async (req, res) => {    
+    const requestQuery = req.query.email ?? null;   
     try{
-        const result = await findUsers();
-        
+        let result;
+        if (requestQuery != null) {
+            //fetch by email
+            result = await findOneUserbyEmail(requestQuery);
+        } else {
+            //fetch all users
+            result = await findUsers();
+        }        
         res.status(200).send(result);  
     } catch (error) {
         res.status(error.statusCode).send({message: error.message});  
