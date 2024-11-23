@@ -1,0 +1,37 @@
+###
+
+POST http://localhost:3001/groups/create 
+Content-Type: application/json
+
+{
+  "name": "Action Lovers",
+  "ownerId": 3
+}
+
+###
+
+POST http://localhost:3001/groups/addMember
+Content-Type: application/json
+
+{
+    "groupId": 8,
+    "userId": 3,
+    "membershipId": "member"
+}
+
+###
+DELETE http://localhost:3001/groups/removeMember
+Content-Type: application/json
+
+{
+    "groupId": 8,
+    "userId": 3
+}
+
+###
+GET http://localhost:3001/groups/all
+Content-Type: application/json
+
+###
+GET http://localhost:3001/groups/8/members
+Content-Type: application/json
