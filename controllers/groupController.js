@@ -34,6 +34,36 @@ exports.createGroup = async (req, res) => {
     }
 };
 
+// New function to get all groups
+exports.getAllGroups = async (req, res) => {
+    try {
+      // Call the model function to get all groups
+      const groups = await groupModel.getAllGroups();
+  
+      // Return the groups in the response
+      return res.status(200).json(groups);
+    } catch (error) {
+      console.error('Error fetching groups:', error);
+      return res.status(500).json({ error: 'Failed to fetch groups' });
+    }
+  };
+
+// Controller to get members of a group by group ID
+exports.getMembersByGroup = async (req, res) => {
+    const groupId = req.params.groupId; // Get the group ID from the request parameters
+
+    try {
+        const members = await groupModel.getMembersByGroupId(groupId);
+        if (members.length === 0) {
+            return res.status(404).json({ message: 'No members found for this group' });
+        }
+        return res.status(200).json(members); // Return the members list
+    } catch (error) {
+        console.error('Error fetching group members:', error);
+        return res.status(500).json({ error: 'Failed to fetch group members' });
+    }
+};
+
 // Controller function to handle adding a member to a group
 exports.addMember = async (req, res) => {
     const { groupId, userId, membershipId } = req.body;

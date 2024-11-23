@@ -14,6 +14,42 @@ exports.findUserById = async (userId) => {
     return result.rows[0];
 };
 
+// Function to get all groups
+exports.getAllGroups = async () => {
+    const sql = `
+      SELECT * FROM "Group";
+    `;
+  
+    const result = await queryDb(sql);
+    return result.rows; // Return an array of all groups
+  };
+
+// Fetch all members of a specific group by Group ID
+exports.getMembersByGroupId = async (groupId) => {
+    const sql = `
+        SELECT 
+            "User".user_id, 
+            "User".username, 
+            "User".email
+        FROM 
+            "User_has_Group" AS ug
+        JOIN 
+            "User"
+        ON 
+            ug.user_user_id = "User".user_id
+        WHERE 
+            ug.group_group_id = $1;
+
+    `;
+
+    try {
+        const result = await queryDb(sql, [groupId]);
+        return result.rows; // Return the rows containing user details
+    } catch (error) {
+        throw error;
+    }
+};
+
 // Function to create a new group
 exports.createGroup = async (name, ownerId) => {
     // Check if the ownerId exists in the "User" table
