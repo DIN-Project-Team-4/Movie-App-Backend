@@ -23,7 +23,7 @@ const onRegister = (async (req, res) => {
 
     try{
         const user = req.body;
-        const result = await createUser(requestBody);        
+        const result = await createUser(requestBody);     
         res.status(200).send(result);  
     } catch (error) {
         res.status(error.statusCode).send({message: error.message});  
