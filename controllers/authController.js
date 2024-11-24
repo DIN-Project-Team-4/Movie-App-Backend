@@ -13,8 +13,10 @@ const onAuthorization = (async (req, res) => {
         const userEmail = requestBody.userEmail;
         const password = requestBody.password;
         const result = await validateUser(userEmail, password);
-        
-        res.status(200).send(result);  
+        const cookieExp = process.env.JWT_TOKEN_EXP? (1000 * 60 *  parseInt(process.env.JWT_TOKEN_EXP.replace("m",""))) : (1000 * 60 * 20)
+        res.cookie('accessToken', result.accessToken, { httpOnly: true, secure: true, sameSite: 'Strict', maxAge: cookieExp });
+        delete result.accessToken;
+        return res.status(200).send(result); 
     } catch (error) {
         res.status(error.statusCode).send({message: error.message});  
     }

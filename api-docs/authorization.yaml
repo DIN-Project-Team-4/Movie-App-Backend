@@ -2,7 +2,7 @@ tags:
   - name: Authorization
     description: "Movie App maintenance endpoints"
 paths:
-  /auth:
+  /sign-in:
     post:
       summary: User authorization
       description: Bearer token not required
@@ -18,16 +18,13 @@ paths:
               properties:
                 userEmail:
                   type: string
+                  format: email
                   default: ""
                   description: User email address
                 password:
                   type: string
                   default: ""
                   description: User password
-                username:
-                  type: string
-                  default: ""
-                  description: User Name
               required:
                 - userEmail
                 - password

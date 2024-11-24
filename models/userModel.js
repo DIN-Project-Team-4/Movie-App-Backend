@@ -14,7 +14,7 @@ const createUser = ((user) => {
 
             //check email is already registered
             if (dbResult.rows.length){
-                reject({statusCode: 302, message: 'Email address already registered with cineScope.'});
+                reject({statusCode: 409, message: 'Email address already registered with cineScope.'});
                 return;
             }
 
