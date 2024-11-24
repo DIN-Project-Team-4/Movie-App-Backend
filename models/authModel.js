@@ -20,24 +20,27 @@ const validateUser = ((userEmail, loginPassword) => {
                 return;
             }
 
-            //validate hashed password
-            if (! await matchPassword(loginPassword, dbResult.rows[0].password)){
-                reject({statusCode: 403, message: 'Invalid credentials, access denied.'});
-                return;
-            }
-            //get id_user and user password
-            const id_user = dbResult.rows[0].id_user;
-            const email = dbResult.rows[0].email ;
+            //read user details
+            const user_id = dbResult.rows[0].user_id;
             const password= dbResult.rows[0].password;
             const username =dbResult.rows[0].username;
 
+            //validate hashed password
+            if (!await matchPassword(loginPassword, password)){
+                reject({statusCode: 403, message: 'Invalid credentials, access denied.'});
+                return;
+            }
+
             // ?if fund in database and the password matches generate the JWT token
+            //update last sucessful login date & time
+            const sql = 'Update "User" Set last_login=$1 Where user_id=$2';
+            await queryDb(sql, [new Date(), user_id]);
+
             // * payload to generate access token
             jwtPayload = {
-                userId: id_user,
+                userId: user_id,
                 userEmail: userEmail,
-                username:username
-                
+                username:username   
             }
 
             // *generate access token
@@ -45,10 +48,11 @@ const validateUser = ((userEmail, loginPassword) => {
 
             // *retiring json  with access token
             returnJson = {
-                userId: id_user,
+                userId: user_id,
                 userEmail: userEmail,  
                 username:username,                             
-                accessToken: accessToken
+                accessToken: accessToken,
+                expiresIn: process.env.JWT_TOKEN_EXP || "20m"
             }
 
             resolve(returnJson);
