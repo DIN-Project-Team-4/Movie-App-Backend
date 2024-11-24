@@ -104,3 +104,18 @@ exports.removeMember = async (groupId, userId) => {
         throw new Error('Failed to remove user from group.');
     }
 };
+
+// Function to delete a group from the database by its ID
+exports.deleteGroupById = async (groupId) => {
+    try {
+      const sql = `DELETE FROM "Group" WHERE group_id = $1`;  // SQL query to delete the group
+      const result = await queryDb(sql, [groupId]);
+  
+      if (result.rowCount === 0) {
+        throw new Error('Group not found');
+      }
+      return result.rows[0];  // Return the deleted group info
+    } catch (error) {
+      throw error;  // Propagate error to be handled by controller
+    }
+  };

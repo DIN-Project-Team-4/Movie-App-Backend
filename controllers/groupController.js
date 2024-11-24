@@ -105,3 +105,16 @@ exports.removeMember = async (req, res) => {
         res.status(500).json({ error: error.message });
     }
 };
+
+// Controller to handle group deletion
+exports.deleteGroup = async (req, res) => {
+    const { groupId } = req.params;  // Extract group ID from URL parameter
+  
+    try {
+      const deletedGroup = await groupModel.deleteGroupById(groupId);  // Call model function to delete the group
+      res.status(200).json({ message: 'Group deleted successfully', group: deletedGroup });
+    } catch (error) {
+      console.error('Error deleting group:', error);
+      res.status(500).json({ error: 'Failed to delete group' });
+    }
+  };

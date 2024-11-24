@@ -10,5 +10,6 @@ router.post('/addmember', groupController.addMember);
 router.delete('/removemember', groupController.removeMember);
 router.get('/all', groupController.getAllGroups);
 router.get('/:groupId/members', groupController.getMembersByGroup);
+router.delete('/delete/:groupId', groupController.deleteGroup);
 
 module.exports = router;
