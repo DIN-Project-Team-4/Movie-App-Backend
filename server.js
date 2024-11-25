@@ -30,11 +30,11 @@ app.all("/", (req, res) => {
   const htmlString = 
     `<html>
       <head>
-        <title>cineScope REST API's</title>
+        <title>CineScope REST API's</title>
       </head>
       <body>
         <center>
-          <h1>cineScope</h1>
+          <h1>CineScope</h1>
           <hr />
           <br />
           <br/>
@@ -69,7 +69,7 @@ app.use((err, req, res, next) => {
 });
 
 app.listen(PORT, () => {
-  console.log(`cineScope API server listens on port ${PORT}`);   
+  console.log(`CineScope API server listens on port ${PORT}`);   
 })
 
 

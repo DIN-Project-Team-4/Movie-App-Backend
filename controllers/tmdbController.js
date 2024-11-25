@@ -38,7 +38,7 @@ const getGenres = async (req, res) => {
 };
 
 // API endpoint to get movies by title from tmdb api
-const searchByTitle = async (req,res) => {
+const searchByTitle = async (req, res) => {
     const { searchText, page } = req.query;
     try {
         const response = await axios.get(`${BASE_URL}/search/movie`, {
@@ -61,7 +61,7 @@ const searchByTitle = async (req,res) => {
 }
 
 // API endpoint to get movies by year from tmdb api
-const searchByYear = async (req,res) => {
+const searchByYear = async (req, res) => {
     const { searchText, page } = req.query;
     try {
         const response = await axios.get(`${BASE_URL}/discover/movie`, {
@@ -86,7 +86,7 @@ const searchByYear = async (req,res) => {
 }
 
 // API endpoint to get movies by genre from tmdb api
-const searchByGenre = async (req,res) => {
+const searchByGenre = async (req, res) => {
     const { genreIdsConcat, page } = req.query;
     try {
         const response = await axios.get(`${BASE_URL}/discover/movie`, {
@@ -171,7 +171,7 @@ const searchAdvanced = async (req, res) => {
         res.status(200).json(response.data)
     } catch (error) {
         console.error('Error fetching movies by advance search:', error.message);
-        res.status(500).json({ error: 'Failed to fetch movies by advance search' }); 
+        res.status(500).json({ error: 'Failed to fetch movies by advance search' });
     }
 }
 
@@ -183,16 +183,16 @@ const getCastIds = async (req, res) => {
         const persons = data.results
         const totalPages = data.total_pages
         let ids = persons.map((person) => person.id)
-        for (let page=2; page<totalPages; page++) {
+        for (let page = 2; page < totalPages; page++) {
             const pageData = await getCastIdsFromPage(castName, page)
             const pagePersons = pageData.results
             const pageIDs = pagePersons.map((person) => person.id)
             ids.push(...pageIDs)
         }
-        res.status(200).json({castIds: ids})
+        res.status(200).json({ castIds: ids })
     } catch (error) {
         console.error('Error fetching cast member IDs:', error.message);
-        res.status(500).json({ error: 'Failed to fetch movies by advance search' }); 
+        res.status(500).json({ error: 'Failed to fetch movies by advance search' });
     }
 };
 
@@ -217,4 +217,54 @@ const getCastIdsFromPage = async (castName, page) => {
     }
 };
 
-module.exports = { getTrendingMovies, getGenres, searchByTitle, searchByYear, searchByGenre, getTrendingCelebrities, getLanguages, getCastIds, searchAdvanced }
+/* GET MOVIE DETAILS BY ID */
+const getMovieDetails = async (req, res) => {
+    const { id } = req.params;
+
+    try {
+        const response = await axios.get(`${BASE_URL}/movie/${id}`, {
+            headers: {
+                accept: 'application/json',
+                Authorization: `Bearer ${tmdbToken}`,
+            },
+            params: {
+                append_to_response: 'videos,credits',
+                language: 'en-US',
+            },
+        });
+
+        res.status(200).json(response.data);
+    } catch (error) {
+        if (error.response) {
+            console.error('Error fetching movie details from TMDB:', error.response.data);
+        } else {
+            console.error('Error fetching movie details from TMDB:', error.message);
+        }
+        res.status(500).json({ error: 'Failed to fetch movie details' });
+    }
+};
+
+const getMovieTrailer = async (req, res) => {
+    const { id } = req.params;
+
+    console.log('Fetching video resources for Movie ID:', id); // For debugging
+
+    try {
+        const response = await axios.get(`${BASE_URL}/movie/${id}/videos`, {
+            headers: {
+                accept: 'application/json',
+                Authorization: `Bearer ${tmdbToken}`,
+            },
+            params: {
+                language: 'en-US',
+            },
+        });
+
+        res.status(200).json(response.data);
+    } catch (error) {
+        console.error('Error fetching movie trailer from TMDB:', error.response ? error.response.data : error.message);
+        res.status(500).json({ error: 'Failed to fetch movie trailer' });
+    }
+};
+
+module.exports = { getTrendingMovies, getGenres, searchByTitle, searchByYear, searchByGenre, getTrendingCelebrities, getLanguages, getCastIds, searchAdvanced, getMovieDetails, getMovieTrailer }
