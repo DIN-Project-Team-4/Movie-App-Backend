@@ -127,4 +127,94 @@ const getTrendingCelebrities = async (req, res) => {
     }
 };
 
-module.exports = { getTrendingMovies, getGenres, searchByTitle, searchByYear, searchByGenre, getTrendingCelebrities }
+// API endpoint to get the list of languages from tmdb api
+const getLanguages = async (req, res) => {
+    try {
+        const response = await axios.get(`${BASE_URL}/configuration/languages`, {
+            headers: {
+                accept: 'application/json',
+                Authorization: `Bearer ${API_KEY}`,
+            },
+        });
+
+        res.status(200).json(response.data);
+    } catch (error) {
+        console.error('Error fetching languages:', error.message);
+        res.status(500).json({ error: 'Failed to fetch languages' });
+    }
+};
+
+// API endpoint to get the list of movies by advance search from tmdb api
+const searchAdvanced = async (req, res) => {
+    const { title, genre, cast, year, language, page } = req.query;
+    try {
+        //const castIDs = await getCastIds(cast)
+        //
+
+        const response = await axios.get(`${BASE_URL}/discover/movie`, {
+            headers: {
+                accept: 'application/json',
+                Authorization: `Bearer ${API_KEY}`,
+            },
+            params: {
+                include_adult: false,
+                include_video: false,
+                language: language,
+                page: page || 1,
+                primary_release_year: year,
+                sort_by: 'popularity.desc',
+                with_genres: genre,
+                with_cast: cast
+            },
+        });
+
+        res.status(200).json(response.data)
+    } catch (error) {
+        console.error('Error fetching movies by advance search:', error.message);
+        res.status(500).json({ error: 'Failed to fetch movies by advance search' }); 
+    }
+}
+
+// API endpoint to get the list of possible cast member IDs from tmdb api
+const getCastIds = async (req, res) => {
+    const { castName } = req.query;
+    try {
+        const data = await getCastIdsFromPage(castName, 1)
+        const persons = data.results
+        const totalPages = data.total_pages
+        let ids = persons.map((person) => person.id)
+        for (let page=2; page<totalPages; page++) {
+            const pageData = await getCastIdsFromPage(castName, page)
+            const pagePersons = pageData.results
+            const pageIDs = pagePersons.map((person) => person.id)
+            ids.push(...pageIDs)
+        }
+        res.status(200).json({castIds: ids})
+    } catch (error) {
+        console.error('Error fetching cast member IDs:', error.message);
+        res.status(500).json({ error: 'Failed to fetch movies by advance search' }); 
+    }
+};
+
+const getCastIdsFromPage = async (castName, page) => {
+    try {
+        const response = await axios.get(`${BASE_URL}/search/person`, {
+            headers: {
+                accept: 'application/json',
+                Authorization: `Bearer ${API_KEY}`,
+            },
+            params: {
+                query: castName,
+                include_adult: false,
+                language: 'en-US',
+                page: page || 1,
+            },
+        });
+        return response.data
+    } catch (error) {
+        console.error('Error fetching cast member IDs:', error.message);
+        return null
+    }
+};
+
+module.exports = { getTrendingMovies, getGenres, searchByTitle, searchByYear, searchByGenre, getTrendingCelebrities, getLanguages, getCastIds, searchAdvanced }
