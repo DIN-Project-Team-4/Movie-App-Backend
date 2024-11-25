@@ -1,7 +1,7 @@
 const axios = require('axios');
 
-const API_KEY = process.env.TMDB_API_KEY;
-const BASE_URL = 'https://api.themoviedb.org/3';
+const tmdbToken = process.env.TMDB_ACCESS_TOKEN;
+const BASE_URL = process.env.TMDB_API_URL;
 
 // API endpoint to get trending movies tmdb api
 const getTrendingMovies = async (req, res) => {
@@ -9,7 +9,7 @@ const getTrendingMovies = async (req, res) => {
         const response = await axios.get(`${BASE_URL}/trending/movie/day?language=en`, {
             headers: {
                 accept: 'application/json',
-                Authorization: `Bearer ${API_KEY}`,
+                Authorization: `Bearer ${tmdbToken}`,
             },
         });
 
@@ -26,7 +26,7 @@ const getGenres = async (req, res) => {
         const response = await axios.get(`${BASE_URL}/genre/movie/list?language=en`, {
             headers: {
                 accept: 'application/json',
-                Authorization: `Bearer ${API_KEY}`,
+                Authorization: `Bearer ${tmdbToken}`,
             },
         });
 
@@ -44,7 +44,7 @@ const searchByTitle = async (req,res) => {
         const response = await axios.get(`${BASE_URL}/search/movie`, {
             headers: {
                 accept: 'application/json',
-                Authorization: `Bearer ${API_KEY}`,
+                Authorization: `Bearer ${tmdbToken}`,
             },
             params: {
                 query: searchText,
@@ -67,7 +67,7 @@ const searchByYear = async (req,res) => {
         const response = await axios.get(`${BASE_URL}/discover/movie`, {
             headers: {
                 accept: 'application/json',
-                Authorization: `Bearer ${API_KEY}`,
+                Authorization: `Bearer ${tmdbToken}`,
             },
             params: {
                 include_adult: false,
@@ -92,7 +92,7 @@ const searchByGenre = async (req,res) => {
         const response = await axios.get(`${BASE_URL}/discover/movie`, {
             headers: {
                 accept: 'application/json',
-                Authorization: `Bearer ${API_KEY}`,
+                Authorization: `Bearer ${tmdbToken}`,
             },
             params: {
                 include_adult: false,
@@ -116,7 +116,7 @@ const getTrendingCelebrities = async (req, res) => {
         const response = await axios.get(`${BASE_URL}/trending/person/day?language=en-US`, {
             headers: {
                 accept: 'application/json',
-                Authorization: `Bearer ${API_KEY}`,
+                Authorization: `Bearer ${tmdbToken}`,
             },
         });
 
@@ -133,7 +133,7 @@ const getLanguages = async (req, res) => {
         const response = await axios.get(`${BASE_URL}/configuration/languages`, {
             headers: {
                 accept: 'application/json',
-                Authorization: `Bearer ${API_KEY}`,
+                Authorization: `Bearer ${tmdbToken}`,
             },
         });
 
@@ -154,7 +154,7 @@ const searchAdvanced = async (req, res) => {
         const response = await axios.get(`${BASE_URL}/discover/movie`, {
             headers: {
                 accept: 'application/json',
-                Authorization: `Bearer ${API_KEY}`,
+                Authorization: `Bearer ${tmdbToken}`,
             },
             params: {
                 include_adult: false,
@@ -201,7 +201,7 @@ const getCastIdsFromPage = async (castName, page) => {
         const response = await axios.get(`${BASE_URL}/search/person`, {
             headers: {
                 accept: 'application/json',
-                Authorization: `Bearer ${API_KEY}`,
+                Authorization: `Bearer ${tmdbToken}`,
             },
             params: {
                 query: castName,
