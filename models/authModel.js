@@ -52,7 +52,8 @@ const validateUser = ((userEmail, loginPassword) => {
                 userEmail: userEmail,  
                 username:username,                             
                 accessToken: accessToken,
-                expiresIn: process.env.JWT_TOKEN_EXP || "20m"
+                tokenCreatedOn: Date.now,
+                expiresIn: process.env.JWT_TOKEN_EXP || "20m",
             }
 
             resolve(returnJson);
