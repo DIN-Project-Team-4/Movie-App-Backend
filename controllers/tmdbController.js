@@ -148,9 +148,6 @@ const getLanguages = async (req, res) => {
 const searchAdvanced = async (req, res) => {
     const { title, genre, cast, year, language, page } = req.query;
     try {
-        //const castIDs = await getCastIds(cast)
-        //
-
         const response = await axios.get(`${BASE_URL}/discover/movie`, {
             headers: {
                 accept: 'application/json',
@@ -181,9 +178,9 @@ const getCastIds = async (req, res) => {
     try {
         const data = await getCastIdsFromPage(castName, 1)
         const persons = data.results
-        const totalPages = data.total_pages
+        const totalPages = (data.total_pages > 5) ? 5 : data.total_pages  // tmdb api freezes if we give too many cast IDs when we search for movies. So, only return the 100 most likely actor's IDs.
         let ids = persons.map((person) => person.id)
-        for (let page = 2; page < totalPages; page++) {
+        for (let page = 2; page <= totalPages; page++) {
             const pageData = await getCastIdsFromPage(castName, page)
             const pagePersons = pageData.results
             const pageIDs = pagePersons.map((person) => person.id)
