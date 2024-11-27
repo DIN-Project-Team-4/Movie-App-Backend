@@ -214,6 +214,30 @@ const getCastIdsFromPage = async (castName, page) => {
     }
 };
 
+// API endpoint to get movies by title, year and language from tmdb api
+const searchByTitleYearLanguage = async (req, res) => {
+    const { title, year, language, page } = req.query;
+    try {
+        const response = await axios.get(`${BASE_URL}/search/movie`, {
+            headers: {
+                accept: 'application/json',
+                Authorization: `Bearer ${tmdbToken}`,
+            },
+            params: {
+                query: title,
+                include_adult: false,
+                language: language,
+                primary_release_year: year,
+                page: page || 1,
+            },
+        });
+        res.status(200).json(response.data);
+    } catch (error) {
+        console.error('Error searching for movies by title, year and language:', error.message);
+        res.status(500).json({ error: 'Failed to search for movies' });
+    }
+}
+
 /* GET MOVIE DETAILS BY ID */
 const getMovieDetails = async (req, res) => {
     const { id } = req.params;
@@ -264,4 +288,4 @@ const getMovieTrailer = async (req, res) => {
     }
 };
 
-module.exports = { getTrendingMovies, getGenres, searchByTitle, searchByYear, searchByGenre, getTrendingCelebrities, getLanguages, getCastIds, searchAdvanced, getMovieDetails, getMovieTrailer }
+module.exports = { getTrendingMovies, getGenres, searchByTitle, searchByYear, searchByGenre, getTrendingCelebrities, getLanguages, getCastIds, searchAdvanced, searchByTitleYearLanguage, getMovieDetails, getMovieTrailer }
