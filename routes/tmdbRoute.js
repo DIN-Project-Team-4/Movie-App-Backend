@@ -1,5 +1,5 @@
 const express = require('express');
-const { getTrendingMovies, getGenres, searchByTitle, searchByYear, searchByGenre, getTrendingCelebrities, getLanguages, getCastIds, searchAdvanced, getMovieDetails, getMovieTrailer } = require('../controllers/tmdbController.js');
+const { getTrendingMovies, getGenres, searchByTitle, searchByYear, searchByGenre, getTrendingCelebrities, getLanguages, getCastIds, searchAdvanced, searchByTitleYearLanguage, getMovieDetails, getMovieTrailer } = require('../controllers/tmdbController.js');
 
 const router = express.Router();
 
@@ -12,6 +12,7 @@ router.get('/trendingcelebrities', getTrendingCelebrities);
 router.get('/language', getLanguages);
 router.get('/cast', getCastIds);
 router.get('/search/advance', searchAdvanced);
+router.get('/search/bytitleyearlang', searchByTitleYearLanguage);
 router.get('/movie/:id', getMovieDetails);
 router.get('/movie/:id/videos', getMovieTrailer);
 
