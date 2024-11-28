@@ -3,11 +3,7 @@ const {addReview, alreadyReviewed, getReviews} = require("../models/reviewModel.
 // Function to create a new review
 const createReview = async (req, res) => {
     const {movieId, description, rating, reviewedAt, userId} = req.body;
-
-    if (!Number.isInteger(movieId)) {
-        return res.status(400).json({error: 'Movie ID is invalid'})
-    }
-
+   
     if (rating === null) {
         return res.status(400).json({error: 'Movie rating cannot be null'})
     }
