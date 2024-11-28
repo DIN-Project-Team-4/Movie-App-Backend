@@ -247,7 +247,7 @@ const getMovieDetails = async (req, res) => {
 const getMovieTrailer = async (req, res) => {
     const { id } = req.params;
 
-    console.log('Fetching video resources for Movie ID:', id); // For debugging
+    //console.log('Fetching video resources for Movie ID:', id); // For debugging
 
     try {
         const response = await axios.get(`${BASE_URL}/movie/${id}/videos`, {
