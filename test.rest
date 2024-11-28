@@ -1,15 +1,14 @@
 ###
-
-POST http://localhost:3001/groups/create 
+POST http://localhost:3001/groups/create
 Content-Type: application/json
 
 {
-  "name": "Action Lovers",
-  "ownerId": 3
+  "name": "One piece fans",
+  "ownerId": 16,
+  "group_description": "i love one piece"
 }
 
 ###
-
 POST http://localhost:3001/groups/addMember
 Content-Type: application/json
 

@@ -3,7 +3,7 @@ const groupModel = require('../models/groupModel');
 
 // Controller to create a new group
 exports.createGroup = async (req, res) => {
-    const { name, ownerId, members } = req.body;
+    const { name, ownerId,group_description, members } = req.body;
 
     // Validate input
     if (!name || !ownerId) {
@@ -18,7 +18,7 @@ exports.createGroup = async (req, res) => {
         }
 
         // Create the group
-        const newGroup = await groupModel.createGroup(name, ownerId);
+        const newGroup = await groupModel.createGroup(name, ownerId, group_description);
 
         // Add members to the group if provided
         if (Array.isArray(members) && members.length > 0) {
