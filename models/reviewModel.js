@@ -16,12 +16,12 @@ const addReview = async (movieId, description, rating, reviewedAt, userId) => {
 }
 
 // Function to check if a given user has already reviewed a given movie
-const alreadyReviewed = async (movieId, userId) => {
+const alreadyReviewed = async (movieID, userId) => {
     const sql = 'select * from "Review" where movie_id = ($1) and user_id = ($2)'
-
+        
     let result
     try {
-        result = await queryDb(sql, [movieId, userId])
+        result = await queryDb(sql, [movieID, userId])
     } catch (error) {
         throw new Error(`Error checking if reviewed: ${error.message}`);
     }
