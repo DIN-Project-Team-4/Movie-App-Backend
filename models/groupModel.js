@@ -51,14 +51,16 @@ exports.getMembersByGroupId = async (groupId) => {
 };
 
 // Function to create a new group
-exports.createGroup = async (name, ownerId) => {
+exports.createGroup = async (name, ownerId, group_description) => {
     // Check if the ownerId exists in the "User" table
     const owner = await exports.findUserById(ownerId);
     if (!owner) {
         throw new Error(`User with id ${ownerId} does not exist.`);
     }
-    const sql = `INSERT INTO "Group" (name, owners_id, created_at) VALUES ($1, $2, NOW()) RETURNING *`;
-    const result = await queryDb(sql, [name, ownerId]);
+    const sql = `INSERT INTO "Group" (name, owners_id, group_description, created_at) 
+             VALUES ($1, $2, $3, NOW()) 
+             RETURNING *`;
+    const result = await queryDb(sql, [name, ownerId, group_description]);
     return result.rows[0];
 };
 
