@@ -30,16 +30,16 @@ const alreadyReviewed = async (movieID, userId) => {
 }
 
 // Function to get all reviews of a given movie
-const getReviews = async (movieId) => {
-    const sql = 'select * from "Review" where movie_id = ($1)'
-
-    let result
+const getReviews = async (movieId, viewAllReviews) => {
+    const sql = `select R.review_id,R.movie_id,R.description,R.rating,R.reviewed_at,R.user_id,U.username from "Review" R inner join  
+                "User" U on R.user_id = U.user_id where movie_id = ($1) Order By R.reviewed_at desc ${!viewAllReviews? "fetch first 1 rows only": ""}`
+    console.log(sql)
     try {
-        result = await queryDb(sql, [movieId])
+        const result = await queryDb(sql, [movieId])
+        return result.rows
     } catch (error) {
         throw new Error(`Error getting reviews: ${error.message}`);
     }
-    return result.rows
 }
 
 module.exports = {addReview, alreadyReviewed, getReviews}

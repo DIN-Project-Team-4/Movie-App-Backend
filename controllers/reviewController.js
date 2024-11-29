@@ -34,14 +34,12 @@ const createReview = async (req, res) => {
 
 //Function to get all the reviews by movie ID
 const readReviews = async (req,res) => {
-
-    if (!Number.isInteger(req.body.movieId)) {
-        return res.status(400).json({error: 'Movie ID is invalid'})
-    }
-
+    const  movieid  = req.params["movieId"];
+    const reviewall = req.params["reviewAll"] || false;
+    
     //Get all the reviews
     try{
-        const result = await  getReviews(req.body.movieId)
+        const result = await  getReviews(movieid, false)
         return res.status(200).json(result)
     }catch(error){
         return res.status(error.status || 500).json({error: error.message})
