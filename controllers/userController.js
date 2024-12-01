@@ -95,6 +95,29 @@ const onLastLogin = (async (req, res) => {
     }
     return;
 })
+// New controller function for deleting a user
+const onDeleteUser = (async (req, res) => {
+    const userId = req.params["userId"];
+    const authenticatedUserId = req.user.id;  // Assuming the user ID is stored in req.user through authentication middleware
 
+    // If the requested userId is different from the authenticated user's ID, return error
+    if (authenticatedUserId !== userId) {
+        return res.status(403).send({ message: 'You can only delete your own account.' });
+    }
 
-module.exports = {onRegister, onFindOneUser, onFindUsers, onLastLogin,onFindOneUserbyEmail };
+    try {
+        // Call the model function to delete the user
+        const result = await deleteUser(userId);
+
+        if (!result) {
+            return res.status(404).send({ message: 'User not found.' });
+        }
+
+        res.status(200).send({ message: 'Account deleted successfully.' });
+    } catch (error) {
+        res.status(error.statusCode || 500).send({ message: error.message || 'Server error while deleting account.' });
+    }
+    return;
+});
+
+module.exports = {onRegister, onFindOneUser, onFindUsers, onLastLogin,onFindOneUserbyEmail, onDeleteUser };

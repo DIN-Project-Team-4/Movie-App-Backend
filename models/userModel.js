@@ -189,6 +189,26 @@ const lastLogin = ((userId) => {
     })
 })
 
+// New function to delete a user
+const deleteUser = ((userId) => {
+    return new Promise(async(resolve, reject) => {
+        try {
+            // SQL query to delete the user by ID
+            const sql = `delete from "User" where user_id=$1 returning *`;
+            const dbResult = await queryDb(sql, [userId]);
+
+            if (!dbResult.rows.length) {
+                reject({ statusCode: 404, message: 'User not found.' });
+                return;
+            }
+
+            resolve(true);  // Return true if deletion is successful
+        } catch (error) {
+            reject({ statusCode: 500, message: error.message });
+        }
+    });
+});
 
 
-module.exports = { createUser, findOneUser, findUsers, lastLogin,findOneUserbyEmail };
+
+module.exports = { createUser, findOneUser, findUsers, lastLogin, findOneUserbyEmail, deleteUser };
