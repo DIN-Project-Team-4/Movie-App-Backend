@@ -3,7 +3,7 @@ const groupModel = require('../models/groupModel');
 
 // Controller to create a new group
 exports.createGroup = async (req, res) => {
-    const { name, ownerId,group_description, members } = req.body;
+    const { name, ownerId,group_description } = req.body;
 
     // Validate input
     if (!name || !ownerId) {
@@ -11,6 +11,12 @@ exports.createGroup = async (req, res) => {
     }
 
     try {
+        // Check if the owner exists
+        const owner = await groupModel.findUserById(ownerId);
+        if (!owner) {
+        return res.status(400).json({ error: `User with id ${ownerId} does not exist.` });
+        }
+
         // Check if a group with the same name already exists
         const existingGroup = await groupModel.findGroupByName(name);
         if (existingGroup) {
@@ -20,12 +26,6 @@ exports.createGroup = async (req, res) => {
         // Create the group
         const newGroup = await groupModel.createGroup(name, ownerId, group_description);
 
-        // Add members to the group if provided
-        if (Array.isArray(members) && members.length > 0) {
-            for (const member of members) {
-                await groupModel.addMemberToGroup(newGroup.group_id, member.userId, member.membershipId);
-            }
-        }
 
         res.status(201).json({ message: "Group created successfully", group: newGroup });
     } catch (error) {
@@ -48,6 +48,26 @@ exports.getAllGroups = async (req, res) => {
     }
   };
 
+// Controller to fetch all groups a user has joined
+exports.getGroupsByUser = async (req, res) => {
+    const { userId } = req.params; // Extracting userId from route params
+  
+    if (!userId) {
+      return res.status(400).json({ error: 'User ID is required' }); // Validation for userId
+    }
+  
+    try {
+      const groups = await groupModel.getUserGroups(userId); // Fetch groups using the model
+      if (groups.length === 0) {
+        return res.status(404).json({ message: 'No groups found for this user' });
+      }
+      return res.status(200).json(groups); // Send groups in response
+    } catch (error) {
+      console.error('Error fetching user groups:', error.message);
+      return res.status(500).json({ error: 'Internal Server Error' }); // Handle errors
+    }
+  };
+
 // Controller to get members of a group by group ID
 exports.getMembersByGroup = async (req, res) => {
     const groupId = req.params.groupId; // Get the group ID from the request parameters
@@ -66,7 +86,8 @@ exports.getMembersByGroup = async (req, res) => {
 
 // Controller function to handle adding a member to a group
 exports.addMember = async (req, res) => {
-    const { groupId, userId, membershipId } = req.body;
+    const { groupId, userId} = req.params;
+    const { membershipId } = req.body;
 
     try {
         // Check if all required fields are provided
@@ -87,7 +108,7 @@ exports.addMember = async (req, res) => {
 
 // Controller function to handle removing a user from a group
 exports.removeMember = async (req, res) => {
-    const { groupId, userId } = req.body;
+    const { groupId, userId } = req.params;
 
     try {
         // Check if all required fields are provided

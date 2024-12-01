@@ -24,6 +24,18 @@ exports.getAllGroups = async () => {
     return result.rows; // Return an array of all groups
   };
 
+  // Function to get all groups a user has joined
+exports.getUserGroups = async (userId) => {
+    const sql = `
+      SELECT g.group_id, g.name, g.created_at, g.owners_id, g.group_description
+      FROM "Group" AS g
+      INNER JOIN "User_has_Group" AS ug ON g.group_id = ug.group_group_id
+      WHERE ug.user_user_id = $1;
+    `;
+    const result = await queryDb(sql, [userId]); // Passing userId to the query
+    return result.rows;
+    };
+
 // Fetch all members of a specific group by Group ID
 exports.getMembersByGroupId = async (groupId) => {
     const sql = `
@@ -50,18 +62,23 @@ exports.getMembersByGroupId = async (groupId) => {
     }
 };
 
-// Function to create a new group
+// Create a group and add the owner to User_has_Group
 exports.createGroup = async (name, ownerId, group_description) => {
-    // Check if the ownerId exists in the "User" table
-    const owner = await exports.findUserById(ownerId);
-    if (!owner) {
-        throw new Error(`User with id ${ownerId} does not exist.`);
-    }
-    const sql = `INSERT INTO "Group" (name, owners_id, group_description, created_at) 
-             VALUES ($1, $2, $3, NOW()) 
-             RETURNING *`;
-    const result = await queryDb(sql, [name, ownerId, group_description]);
-    return result.rows[0];
+  
+      // Insert the new group
+      const sqlGroup = `
+        INSERT INTO "Group" (name, owners_id, group_description, created_at) 
+        VALUES ($1, $2, $3, NOW()) 
+        RETURNING *`;
+      const groupResult = await queryDb(sqlGroup, [name, ownerId, group_description]);
+      const newGroup = groupResult.rows[0];
+  
+      // Add the owner to the "User_has_Group" table
+      const sqlUserHasGroup = `
+        INSERT INTO "User_has_Group" (group_group_id, user_user_id, membership_id, joined_at) 
+        VALUES ($1, $2, $3, NOW())`;
+      await queryDb(sqlUserHasGroup, [newGroup.group_id, ownerId, 'owner']);
+      return newGroup;
 };
 
 
