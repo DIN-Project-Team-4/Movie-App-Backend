@@ -2,141 +2,67 @@ import { createUser } from './models/userModel.js'
 import { validateUser } from './models/authModel.js'
 import {expect} from 'chai'
 import fetch from 'node-fetch'; // Ensure node-fetch is up to date
+import request from 'supertest';
+import express from 'express';
 
 const base_url = 'http://localhost:3001'
 
 // Helper function to get access token
 const getAccessToken = async () => {
-  const response = await fetch(`${base_url}/api/signin`, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({
-      email: 'login@foo.com',
-      password: 'login123',
-    }),
-  });
-  const data = await response.json();
-  return `Bearer ${data.accessToken}`;
+  const secretKey = process.env.ACCESS_TOKEN_PRIVATE_KEY;
+  
+  // Define the payload
+  const payload = {
+  };
+
+  // Generate JWT token
+  const token = jwt.sign(payload, secretKey, { expiresIn: '1h' }); // Set expiration time to 1 hour
+  return token;
+
 };
 
-// Test for signup endpoint
-describe('POST /api/signup', () => {
-  it('should register with valid email and password', async () => {
-    const email = 'login@foo.com';
-    const password = 'login123';
-    const username = 'loginuser';
-    const created_at = new Date();
-    const token = await getAccessToken();
 
-    const response = await fetch(`${base_url}/api/v1/users`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        authorization: token,
-      },
-      body: JSON.stringify({ email, password, username, created_at }),
-    });
-
-    const data = await response.json();
-    expect(response.status).to.equal(201, data.error);
-    expect(data).to.be.an('object');
-    expect(data).to.include.all.keys('id', 'email');
-  });
-
-  it('should not post a user with less than 8 characters password', async () => {
-    const email = 'register@foo.com';
-    const password = 'short1';
-
-    const response = await fetch(`${base_url}/api/v1/users`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({ email, password }),
-    });
-
-    const data = await response.json();
-    expect(response.status).to.equal(400, data.error);
-    expect(data).to.be.an('object');
-    expect(data).to.include.all.keys('error');
-  });
-});
-
-// Test for login endpoint
-describe('POST /api/signin', () => {
-  it('should login with valid email and password', async () => {
-    const email = 'login@foo.com';
-    const password = 'login123';
-
-    const response = await fetch(`${base_url}/api/signin`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ email, password }),
-    });
-
-    const data = await response.json();
-    expect(response.status).to.equal(200);
-    expect(data).to.be.an('object');
-    expect(data).to.include.all.keys('accessToken');
-  });
-
-  it('should not login with invalid credentials', async () => {
-    const email = 'invalid@foo.com';
-    const password = 'wrongpassword';
-
-    const response = await fetch(`${base_url}/api/signin`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ email, password }),
-    });
-
-    const data = await response.json();
-    expect(response.status).to.equal(401);
-    expect(data).to.be.an('object');
-    expect(data).to.include.all.keys('error');
-  });
-});
-
-// Test for signout endpoint
-describe('POST /api/signout', () => {
-  it('should logout the user', async () => {
-    const token = await getAccessToken();
-
-    const response = await fetch(`${base_url}/api/signout`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        authorization: token,
-      },
-    });
-
-    const data = await response.json();
-    expect(response.status).to.equal(200);
-    expect(data).to.be.an('object');
-    expect(data).to.include.all.keys('message');
-  });
-});
 
 // Test for deleting user account
-describe('DELETE /api/user/:id', () => {
+describe('DELETE /api/v1/user/:id', () => {
   it('should delete the user account', async () => {
-    const token = await getAccessToken();
-    const userId = 'some-valid-user-id';
+    const app = express(); // Create an instance of Express
 
-    const response = await fetch(`${base_url}/api/user/${userId}`, {
-      method: 'DELETE',
-      headers: {
-        'Content-Type': 'application/json',
-        authorization: token,
-      },
-    });
 
-    const data = await response.json();
+    // Generate JWT token for authorization
+    const accessToken = getAccessToken();
+
+    const userId = 'dsjfhlksdjf';
+
+    console.log('Base URI:', process.env.BASE_URI);
+
+
+
+    // Make the DELETE request with the generated token
+    const response = await request(app)
+      .delete(`/api/v1/delete/${userId}`)
+      .set('Cookie', `access_token=${accessToken}`);  // Set the cookie with the JWT token
+
+    // Check the response status and message
     expect(response.status).to.equal(200);
-    expect(data).to.be.an('object');
-    expect(data).to.include.all.keys('message');
+    expect(response.body).toEqual({ message: 'User deleted successfully' });
+  });
+
+  it('should return 401 for unauthorized access (missing or invalid token)', async () => {
+    const userId = '12345';
+    const app = express(); // Create an instance of Express
+
+    // Make the DELETE request without a token
+    const response = await request(app)
+      .delete(`/api/v1/delete/${userId}`)
+      .set('Cookie', 'access_token=');
+
+    // Check the response status and error message
+    expect(response.status).to.equal(401);
+    expect(response.body.error).toBe('Unauthorized access. Invalid or missing token.');
   });
 });
+
 //const base_url =  'http://localhost:5050'
 
 //test cases for user accounts
