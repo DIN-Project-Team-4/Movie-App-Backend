@@ -2,7 +2,7 @@ const {addReview, alreadyReviewed, getReviews} = require("../models/reviewModel.
 
 // Function to create a new review
 const createReview = async (req, res) => {
-    const {movieId, description, rating, reviewedAt, userId} = req.body;
+    const {movieId, description, rating, reviewedAt, movieTitle, moviePosterUrl, userId} = req.body;
    
     if (rating === null) {
         return res.status(400).json({error: 'Movie rating cannot be null'})
@@ -24,7 +24,7 @@ const createReview = async (req, res) => {
 
     // Add review to database
     try {
-        const result = await addReview(movieId, description, rating, reviewedAt, userId)
+        const result = await addReview(movieId, description, rating, reviewedAt, movieTitle, moviePosterUrl, userId)
         return res.status(200).json(result)
     } catch (error) {
         return res.status(error.status || 500).json({error: error.message})
@@ -34,12 +34,12 @@ const createReview = async (req, res) => {
 
 //Function to get all the reviews by movie ID
 const readReviews = async (req,res) => {
-    const  movieid  = req.params["movieId"];
-    const reviewall = req.params["reviewAll"] || false;
+    const  movieid  = req.params["movieId"] ?? "";
+    const viewAll = req.params["showAllReviews"] ?? false;
     
     //Get all the reviews
     try{
-        const result = await  getReviews(movieid, false)
+        const result = await  getReviews(movieid, viewAll)
         return res.status(200).json(result)
     }catch(error){
         return res.status(error.status || 500).json({error: error.message})

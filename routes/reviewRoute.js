@@ -5,6 +5,6 @@ const { AuthMiddleware } = require('../middleware/authMiddleware.js');
 const router = express.Router()
 
 router.post('/movie/createReview', AuthMiddleware, createReview)
-router.get('/reviews/:movieId/:reviewAll',readReviews)
+router.get('/reviews/:movieId?/:showAllReviews?',readReviews)
 
 module.exports = router
