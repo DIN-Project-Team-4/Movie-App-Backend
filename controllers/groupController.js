@@ -70,19 +70,17 @@ exports.getGroupsByUser = async (req, res) => {
 
 // Controller to get members of a group by group ID
 exports.getMembersByGroup = async (req, res) => {
-    const groupId = req.params.groupId; // Get the group ID from the request parameters
+    const groupId = req.params.groupId;
 
     try {
         const members = await groupModel.getMembersByGroupId(groupId);
-        if (members.length === 0) {
-            return res.status(404).json({ message: 'No members found for this group' });
-        }
-        return res.status(200).json(members); // Return the members list
+        res.status(200).json(members);
     } catch (error) {
         console.error('Error fetching group members:', error);
-        return res.status(500).json({ error: 'Failed to fetch group members' });
+        res.status(500).json({ error: 'Failed to fetch members' });
     }
 };
+
 
 // Controller function to handle adding a member to a group
 exports.addMember = async (req, res) => {
@@ -139,3 +137,89 @@ exports.deleteGroup = async (req, res) => {
       res.status(500).json({ error: 'Failed to delete group' });
     }
   };
+
+exports.getMessagesByGroup = async (req, res) => {
+    const { groupId } = req.params;
+
+    try {
+        const messages = await groupModel.getMessagesByGroupId(groupId);
+        res.status(200).json(messages);
+    } catch (error) {
+        console.error('Error fetching messages:', error);
+        res.status(500).json({ error: 'Failed to fetch messages' });
+    }
+};
+
+
+// Controller to add a message to a group
+exports.addMessageToGroup = async (req, res) => {
+    const { groupId } = req.params;
+    const { senderId, message } = req.body;
+
+    if (!senderId || !message) {
+        return res.status(400).json({ error: 'Sender ID and message are required.' });
+    }
+
+    try {
+        const newMessage = await groupModel.addMessage(groupId, senderId, message);
+        res.status(201).json(newMessage);
+    } catch (error) {
+        console.error('Error adding message:', error);
+        res.status(500).json({ error: 'Failed to add message' });
+    }
+};
+
+exports.applyToJoinGroup = async (req, res) => {
+    const { groupId, userId } = req.body;
+
+    if (!groupId || !userId) {
+        return res.status(400).json({ error: 'Group ID and User ID are required.' });
+    }
+
+    try {
+        const existingMembership = await groupModel.getMembership(groupId, userId);
+
+        if (existingMembership) {
+            return res.status(400).json({ error: 'User has already applied or is a member of this group.' });
+        }
+
+        const result = await groupModel.applyToGroup(groupId, userId);
+
+        res.status(201).json({ message: 'Application submitted successfully', membership: result });
+    } catch (error) {
+        console.error('Error applying to join group:', error);
+        res.status(500).json({ error: 'Failed to apply to join group.' });
+    }
+};
+
+// Approve or reject a membership application
+exports.reviewApplication = async (req, res) => {
+    const { groupId, userId, status } = req.body;
+
+    if (!groupId || !userId || !status) {
+        return res.status(400).json({ error: 'Group ID, User ID, and status are required.' });
+    }
+
+    try {
+        const result = await groupModel.updateMembershipStatus(groupId, userId, status);
+
+        res.status(200).json({ message: `Application ${status}`, membership: result });
+    } catch (error) {
+        console.error('Error reviewing application:', error);
+        res.status(500).json({ error: 'Failed to review application.' });
+    }
+};
+exports.getGroupsName = async (req, res) => {
+    const { groupId } = req.params;
+
+    try {
+        const groupName = await groupModel.getGroupName(groupId);
+        res.status(200).json(groupName);
+    } catch (error) {
+        console.error('Error fetching group name:', error);
+        res.status(500).json({ error: 'Failed to fetch group name' });
+    }
+}
+
+
+
