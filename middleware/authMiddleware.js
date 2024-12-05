@@ -5,8 +5,14 @@ const jwt = require('jsonwebtoken');
 const AuthMiddleware = ((req, res, next) => {
 	// Get secret key
 	const secretKey = process.env.ACCESS_TOKEN_PRIVATE_KEY
+	// Add refresh token secret key
+	const refreshKey = process.env.REFRESH_TOKEN_PRIVATE_KEY; 
+
 	const cookie = req.headers.cookie;
+	
 	const accessToken = cookie.split('=')[1];
+	const refreshToken = cookie.split('=')[1];
+
 	// Check for access token, empty or not
 	if (!accessToken) {
 		return res.status(401).json({ error: 'Unauthorized access. Invalid or missing token.' });
@@ -29,10 +35,46 @@ const AuthMiddleware = ((req, res, next) => {
 		// Move to the next middleware or route handler
 		next();
 	} catch (error) {
-		console.log(error)
-		// *Handle token verification errors
-		return res.status(401).json({ error: error.message === "jwt expired" ? "JWT token expired" : "Unauthorized access. Invalid or missing token." });
-	}
+		if (error.name === "TokenExpiredError" && refreshToken) {
+			// If access token expired, verify and refresh using the refresh token
+			try {
+			  const decodedRefreshToken = jwt.verify(refreshToken, refreshKey);
+	  
+			  // Generate a new access token
+			  const newAccessToken = jwt.sign(
+				{
+				  userId: decodedRefreshToken.userId,
+				  userEmail: decodedRefreshToken.userEmail,
+				  userName: decodedRefreshToken.userName,
+				},
+				secretKey,
+				{ expiresIn: '15m' } // Short lifespan for the access token
+			  );
+	  
+			  // Set the new access token in the cookie
+			  res.cookie('accessToken', newAccessToken, {
+				httpOnly: true,
+				secure: process.env.NODE_ENV === 'production', // Use secure cookies in production
+				sameSite: 'strict',
+			  });
+	  
+			  // Proceed with the request
+			  process.env.USER_ID = decodedRefreshToken.userId;
+			  process.env.USER_EMAIL = decodedRefreshToken.userEmail;
+			  process.env.USER_NAME = decodedRefreshToken.userName;
+			  return next();
+			} catch (refreshError) {
+			  return res.status(401).json({ error: 'Refresh token expired or invalid. Please log in again.' });
+			}
+		  }
+	  
+		  // Return error for other issues
+		  return res.status(401).json({
+			error: error.message === "jwt expired"
+			  ? "Access token expired. Please log in again."
+			  : "Unauthorized access. Invalid token.",
+		  });
+		}
 });
 
 

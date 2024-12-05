@@ -1,4 +1,4 @@
-const { getAccessToken } = require('../helper/jwtHelper.js');
+const { getAccessToken,getRefreshToken } = require('../helper/jwtHelper.js');
 const { matchPassword } = require('../helper/hashStringHelper.js');
 const { queryDb } = require('../repository/queryDatabase');
 
@@ -45,6 +45,9 @@ const validateUser = ((userEmail, loginPassword) => {
 
             // *generate access token
             const accessToken = getAccessToken(jwtPayload) 
+            //*generate refreash token
+            const refreshToken = getRefreshToken(jwtPayload);
+
 
             // *retiring json  with access token
             returnJson = {
@@ -53,7 +56,9 @@ const validateUser = ((userEmail, loginPassword) => {
                 username:username,                             
                 accessToken: accessToken,
                 tokenCreatedOn: Date.now,
-                expiresIn: process.env.JWT_TOKEN_EXP || "20m",
+                expiresIn: process.env.JWT_TOKEN_EXP || "60m",
+                refreshExpiresIn: process.env.REFRESH_TOKEN_EXP || "14d",
+                refreshToken: refreshToken, // This is added to the response
             }
 
             resolve(returnJson);

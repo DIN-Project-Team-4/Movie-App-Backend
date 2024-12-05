@@ -1,26 +1,40 @@
 const {validateUser } = require('../models/authModel')
 
-const onAuthorization = (async (req, res) => {
-    
-    const requestBody = req.body;
+const onAuthorization = async (req, res) => {
+    const { userEmail, password } = req.body;
 
-    //check either email or password is there
-    if (!requestBody.hasOwnProperty('userEmail') || !requestBody.hasOwnProperty('password')){
-        return res.status(400).send({message: 'Invalid request, userEmail and password required.'});  
+    if (!userEmail || !password) {
+        return res.status(400).send({ message: 'Email and password are required.' });
     }
-    
-    try{
-        const userEmail = requestBody.userEmail;
-        const password = requestBody.password;
+
+    try {
         const result = await validateUser(userEmail, password);
-        const cookieExp = process.env.JWT_TOKEN_EXP? (1000 * 60 *  parseInt(process.env.JWT_TOKEN_EXP.replace("m",""))) : (1000 * 60 * 20)
-        res.cookie('accessToken', result.accessToken, { httpOnly: true, secure: true, sameSite: 'Strict', maxAge: cookieExp });
+
+        const cookieExp = 1000 * 60 * parseInt(process.env.JWT_TOKEN_EXP.replace('m', ''));
+        const refreshCookieExp = 1000 * 60 * 60 * 24 * 14;
+
+        res.cookie('accessToken', result.accessToken, {
+            httpOnly: true,
+            secure: true,
+            sameSite: 'Strict',
+            maxAge: cookieExp,
+        });
+
+        res.cookie('refreshToken', result.refreshToken, {
+            httpOnly: true,
+            secure: true,
+            sameSite: 'Strict',
+            maxAge: refreshCookieExp,
+        });
+
         delete result.accessToken;
-        return res.status(200).send(result); 
+        delete result.refreshToken;
+
+        res.status(200).send(result);
     } catch (error) {
-        res.status(error.statusCode).send({message: error.message});  
+        res.status(error.statusCode || 500).send({ message: error.message });
     }
-    return;
-})     
+};
+   
 
 module.exports = {onAuthorization};
