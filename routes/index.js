@@ -7,8 +7,6 @@ const favouritesRoute = require("./favouritesRoute");
 const tmdbRoute = require('./tmdbRoute.js')
 const groupRoute = require('./groupRoute.js');
 
-console.log("Favourites route registered at /favourites"); //DEBUGGING
-
 const router = express.Router();
 
 router.use(healthCheck);

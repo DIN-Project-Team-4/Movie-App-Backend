@@ -2,9 +2,9 @@ const jwt = require("jsonwebtoken");
 const { getAccessToken } = require("../helper/jwtHelper");
 
 const TokenInterceptor = async (req, res, next) => {
-    console.log("TokenInterceptor middleware triggered"); // Debugging middleware
-    console.log("Access Token inside function:", req.cookies.accessToken); // Debugging tokens
-    console.log("Refresh Token:", req.cookies.refreshToken);
+    //console.log("TokenInterceptor middleware triggered"); // Debugging middleware
+    //console.log("Access Token inside function:", req.cookies.accessToken); // Debugging tokens
+    //console.log("Refresh Token:", req.cookies.refreshToken);
 
     try {
         const accessToken = req.cookies.accessToken;
@@ -37,7 +37,7 @@ const TokenInterceptor = async (req, res, next) => {
                     // Set new Access Token in cookies
                     res.cookie("accessToken", newAccessToken, {
                         httpOnly: true,
-                        secure: process.env.NODE_ENV === "production", // Use secure only in production
+                        secure: false, //Changed to accept http requests, clarification: https://developer.mozilla.org/en-US/docs/Web/HTTP/Cookies#secure_and_httponly_cookies
                         sameSite: "Strict",
                         maxAge: 1000 * 60 * parseInt(process.env.JWT_TOKEN_EXP.replace("m", "")),
                     });
