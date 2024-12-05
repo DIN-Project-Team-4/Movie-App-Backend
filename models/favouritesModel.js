@@ -36,8 +36,23 @@ const toggleFavourite = async (movieId, userId, movieName) => {
     }
 };
 
+// Function to fetch all favourites for a user
+const getFavouritesByUser = async (userId) => {
+    try {
+        console.log("Fetching favourites for user ID:", userId); // Debugging: Log the user ID
+        const sql = 'SELECT * FROM "Favorit" WHERE user_user_id = $1';
+        const result = await queryDb(sql, [userId]);
+        console.log("Query executed successfully. Result rows:", result.rows); // Debugging: Log the results
+        return result.rows; // Return the array of favourites
+    } catch (error) {
+        console.error("Error in getFavouritesByUser:", error.message); // Debugging: Log the error
+        throw error;
+    }
+};
+
 module.exports = {
     addToFavourites,
     removeFromFavourites,
     toggleFavourite,
+    getFavouritesByUser
 };

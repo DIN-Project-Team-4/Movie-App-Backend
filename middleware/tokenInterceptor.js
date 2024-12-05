@@ -2,9 +2,9 @@ const jwt = require("jsonwebtoken");
 const { getAccessToken } = require("../helper/jwtHelper");
 
 const TokenInterceptor = async (req, res, next) => {
-    //console.log("TokenInterceptor middleware triggered"); // Debugging middleware
-    //console.log("Access Token inside function:", req.cookies.accessToken); // Debugging tokens
-    //console.log("Refresh Token:", req.cookies.refreshToken);
+    console.log("TokenInterceptor middleware triggered"); // Debugging middleware
+    console.log("Access Token inside function:", req.cookies.accessToken); // Debugging tokens
+    console.log("Refresh Token:", req.cookies.refreshToken);
 
     try {
         const accessToken = req.cookies.accessToken;
