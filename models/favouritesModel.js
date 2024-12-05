@@ -1,59 +1,43 @@
-const {queryDb} = require("../repository/queryDatabase.js")
+const { queryDb } = require("../repository/queryDatabase.js");
 
-// Function to add a given movie to a given user's favourites list
+// Function to add a movie to favourites
 const addToFavourites = async (movieId, addedAt, userId, movieName) => {
-    const sql = 'insert into "Favorit"(movie_id,added_at,user_user_id,movie_name) values ($1,$2,$3,$4) returning *'
-    let result
-    try {
-        result = await queryDb(sql, [movieId, addedAt, userId, movieName])
-        if (!result.rows.length) {
-            throw new Error('Failed to insert to favourites')
-        }
-    } catch (error) {
-        throw new Error(`Error adding to favourites: ${error.message}`);
+    const sql = 'INSERT INTO "Favorit"(movie_id, added_at, user_user_id, movie_name) VALUES ($1, $2, $3, $4) RETURNING *';
+    const result = await queryDb(sql, [movieId, addedAt, userId, movieName]);
+    if (!result.rows.length) {
+        throw new Error("Failed to add to favourites");
     }
-    return result.rows[0]
-}
+    return result.rows[0];
+};
 
-// Function to check if a given user has already added a given movie to favourites
-const alreadyInFavourites = async (movieId, userId) => {
-    const sql = 'select * from "Favorit" where movie_id = ($1) and user_user_id = ($2)'
-
-    let result
-    try {
-        result = await queryDb(sql, [movieId, userId])
-    } catch (error) {
-        throw new Error(`Error checking if already added to favourites: ${error.message}`);
-    }
-
-    return result.rows.length > 0
-}
-
-// Function to get the list of favourites for a given user
-const readFavourites = async (userId) => {
-    const sql = 'select * from "Favorit" where user_user_id = ($1)'
-    let result
-    try {
-        result = await queryDb(sql, [userId])
-    } catch (error) {
-        throw new Error(`Error getting favourites: ${error.message}`);
-    }
-    return result.rows 
-}
-
-// Function to delete a favourite movie from a user
+// Function to remove a movie from favourites
 const removeFromFavourites = async (movieId, userId) => {
-    const sql = 'delete from "Favorit" where movie_id = ($1) and user_user_id = ($2) returning *'
-    let result
-    try {
-        result = await queryDb(sql, [movieId, userId])
-        if (!result.rows.length) {
-            throw new Error('Failed to remove movie from favourites for this user')
-        }
-    } catch (error) {
-        throw new Error(`Error deleting from favourites: ${error.message}`);
+    const sql = 'DELETE FROM "Favorit" WHERE movie_id = $1 AND user_user_id = $2 RETURNING *';
+    const result = await queryDb(sql, [movieId, userId]);
+    if (!result.rows.length) {
+        throw new Error("Failed to remove from favourites");
     }
-    return result.rows
-}
+    return result.rows[0];
+};
 
-module.exports = {addToFavourites, alreadyInFavourites, readFavourites, removeFromFavourites}
+// Function to toggle a favourite movie for a user
+const toggleFavourite = async (movieId, userId, movieName) => {
+    const checkSql = 'SELECT * FROM "Favorit" WHERE movie_id = $1 AND user_user_id = $2';
+    const deleteSql = 'DELETE FROM "Favorit" WHERE movie_id = $1 AND user_user_id = $2';
+    const insertSql = 'INSERT INTO "Favorit"(movie_id, added_at, user_user_id, movie_name) VALUES ($1, NOW(), $2, $3) RETURNING *';
+
+    const result = await queryDb(checkSql, [movieId, userId]);
+    if (result.rows.length > 0) {
+        await queryDb(deleteSql, [movieId, userId]);
+        return { message: "Movie removed from favourites", removed: true };
+    } else {
+        const insertResult = await queryDb(insertSql, [movieId, userId, movieName]);
+        return { message: "Movie added to favourites", added: true, data: insertResult.rows[0] };
+    }
+};
+
+module.exports = {
+    addToFavourites,
+    removeFromFavourites,
+    toggleFavourite,
+};

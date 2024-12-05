@@ -1,11 +1,9 @@
-const express = require('express');
-const {insertToFavourites, getFavourites, deleteFromFavourites} = require("../controllers/favouritesController.js");
-const { AuthMiddleware } = require('../middleware/authMiddleware.js');
+const express = require("express");
+const { toggleFavouriteMovie } = require("../controllers/favouritesController");
+const { TokenInterceptor } = require("../middleware/tokenInterceptor");
 
-const router = express.Router()
+const router = express.Router();
 
-router.post('/movie', AuthMiddleware, insertToFavourites)
-router.get('/profile', AuthMiddleware, getFavourites)
-router.delete('/movie', AuthMiddleware, deleteFromFavourites)
+router.post("/toggle", TokenInterceptor, toggleFavouriteMovie); 
 
-module.exports = router
+module.exports = router;

@@ -1,51 +1,62 @@
-const jwt = require('jsonwebtoken');
-const { getAccessToken } = require('../helper/jwtHelper'); // Ensure this function handles token generation
-const { validateRefreshToken } = require('../helper/jwtHelper'); // Add a helper to validate refresh tokens
+const jwt = require("jsonwebtoken");
+const { getAccessToken } = require("../helper/jwtHelper");
 
 const TokenInterceptor = async (req, res, next) => {
+    console.log("TokenInterceptor middleware triggered"); // Debugging middleware
+    console.log("Access Token inside function:", req.cookies.accessToken); // Debugging tokens
+    console.log("Refresh Token:", req.cookies.refreshToken);
+
     try {
         const accessToken = req.cookies.accessToken;
         const refreshToken = req.cookies.refreshToken;
 
         if (!accessToken || !refreshToken) {
-            return res.status(401).send({ message: 'Authentication required.' });
+            return res.status(401).send({ message: "Authentication required." });
         }
 
         // Verify Access Token
-        jwt.verify(accessToken, process.env.ACCESS_TOKEN_PRIVATE_KEY, (err) => {
-            if (err && err.name === 'TokenExpiredError') {
-                // Access token expired, validate refresh token
-                jwt.verify(refreshToken, process.env.REFRESH_TOKEN_PRIVATE_KEY, async (refreshErr, decoded) => {
-                    if (refreshErr) {
-                        return res.status(403).send({ message: 'Invalid or expired refresh token.' });
-                    }
+        try {
+            req.user = jwt.verify(accessToken, process.env.ACCESS_TOKEN_PRIVATE_KEY); // Decode valid token
+            console.log("Access Token is valid:", req.user);
+            return next();
+        } catch (err) {
+            if (err.name === "TokenExpiredError") {
+                console.log("Access Token expired, verifying Refresh Token...");
 
-                    // Generate new tokens
+                try {
+                    const decoded = jwt.verify(refreshToken, process.env.REFRESH_TOKEN_PRIVATE_KEY);
+                    console.log("Refresh Token is valid:", decoded);
+
+                    // Generate new Access Token
                     const newAccessToken = getAccessToken({
                         userId: decoded.userId,
                         userEmail: decoded.userEmail,
                         username: decoded.username,
                     });
 
-                    res.cookie('accessToken', newAccessToken, {
+                    // Set new Access Token in cookies
+                    res.cookie("accessToken", newAccessToken, {
                         httpOnly: true,
-                        secure: true,
-                        sameSite: 'Strict',
-                        maxAge: 1000 * 60 * parseInt(process.env.JWT_TOKEN_EXP.replace('m', '')),
+                        secure: process.env.NODE_ENV === "production", // Use secure only in production
+                        sameSite: "Strict",
+                        maxAge: 1000 * 60 * parseInt(process.env.JWT_TOKEN_EXP.replace("m", "")),
                     });
 
                     req.user = decoded; // Attach user info to request
-                });
-            } else if (err) {
-                return res.status(403).send({ message: 'Invalid access token.' });
-            } else {
-                req.user = jwt.decode(accessToken); // Decode valid token
+                    console.log("New Access Token generated and set.");
+                    return next();
+                } catch (refreshErr) {
+                    console.error("Refresh Token verification failed:", refreshErr.message);
+                    return res.status(403).send({ message: "Invalid or expired refresh token." });
+                }
             }
-        });
 
-        next(); // Proceed to the next middleware
+            console.error("Access Token verification failed:", err.message);
+            return res.status(403).send({ message: "Invalid access token." });
+        }
     } catch (error) {
-        return res.status(500).send({ message: 'Internal Server Error.' });
+        console.error("Error in TokenInterceptor:", error.message);
+        return res.status(500).send({ message: "Internal Server Error." });
     }
 };
 
