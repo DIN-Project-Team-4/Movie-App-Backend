@@ -15,14 +15,14 @@ const onAuthorization = async (req, res) => {
 
         res.cookie("accessToken", result.accessToken, {
             httpOnly: true,
-            secure: process.env.NODE_ENV === "production", 
+            secure: false, 
             sameSite: "Strict",
             maxAge: cookieExp,
         });
 
         res.cookie("refreshToken", result.refreshToken, {
             httpOnly: true,
-            secure: process.env.NODE_ENV === "production", 
+            secure: false, 
             sameSite: "Strict",
             maxAge: refreshCookieExp,
         });

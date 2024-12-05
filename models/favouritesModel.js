@@ -1,6 +1,6 @@
 const { queryDb } = require("../repository/queryDatabase.js");
 
-// Function to add a movie to favourites
+// ADDING SINGLE MOVIE TO FAVOURITES
 const addToFavourites = async (movieId, addedAt, userId, movieName) => {
     const sql = 'INSERT INTO "Favorit"(movie_id, added_at, user_user_id, movie_name) VALUES ($1, $2, $3, $4) RETURNING *';
     const result = await queryDb(sql, [movieId, addedAt, userId, movieName]);
@@ -10,7 +10,7 @@ const addToFavourites = async (movieId, addedAt, userId, movieName) => {
     return result.rows[0];
 };
 
-// Function to remove a movie from favourites
+// REMOVING SINGLE MOVIE FROM FAVOURITES
 const removeFromFavourites = async (movieId, userId) => {
     const sql = 'DELETE FROM "Favorit" WHERE movie_id = $1 AND user_user_id = $2 RETURNING *';
     const result = await queryDb(sql, [movieId, userId]);
@@ -20,7 +20,7 @@ const removeFromFavourites = async (movieId, userId) => {
     return result.rows[0];
 };
 
-// Function to toggle a favourite movie for a user
+// CHECKING IF MOVIE IS ALREADY FAVOURITED
 const toggleFavourite = async (movieId, userId, movieName) => {
     const checkSql = 'SELECT * FROM "Favorit" WHERE movie_id = $1 AND user_user_id = $2';
     const deleteSql = 'DELETE FROM "Favorit" WHERE movie_id = $1 AND user_user_id = $2';
@@ -36,8 +36,23 @@ const toggleFavourite = async (movieId, userId, movieName) => {
     }
 };
 
+// PREPARATION FOR FETCHING FAVOURITE LIST (NOT DONE)
+const getFavouritesByUser = async (userId) => {
+    try {
+        console.log("Fetching favourites for user ID:", userId); // DEBUGGING
+        const sql = 'SELECT * FROM "Favorit" WHERE user_user_id = $1';
+        const result = await queryDb(sql, [userId]);
+        console.log("Query executed successfully. Result rows:", result.rows); // DEBUGGING
+        return result.rows;
+    } catch (error) {
+        console.error("Error in getFavouritesByUser:", error.message); // DEBUGGING
+        throw error;
+    }
+};
+
 module.exports = {
     addToFavourites,
     removeFromFavourites,
     toggleFavourite,
+    getFavouritesByUser
 };
