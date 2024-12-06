@@ -14,6 +14,6 @@ router.get(`${process.env.BASE_URI}/delete/:userId`, TokenInterceptor, onDeleteU
 //router.get(`${process.env.BASE_URI}/users`, AuthMiddleware, onFindOneUserbyEmail); 
 
 //added part for Profile Page
-router.get(`${process.env.BASE_URI}/users/me`, AuthMiddleware, onGetCurrentUser);
+router.get(`${process.env.BASE_URI}/users/me`, TokenInterceptor, onGetCurrentUser);
 
 module.exports = router;
