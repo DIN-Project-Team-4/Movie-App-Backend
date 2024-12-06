@@ -1,4 +1,8 @@
+require('dotenv').config();
+const axios = require('axios');
 const { queryDb } = require('../repository/queryDatabase');
+
+const tmdbToken = process.env.TMDB_ACCESS_TOKEN;
 
 // Function to check if a group with the given name already exists
 exports.findGroupByName = async (name) => {
@@ -124,35 +128,89 @@ exports.deleteGroupById = async (groupId) => {
       throw error;  // Propagate error to be handled by controller
     }
   };
+
+exports.leaveGroupById = async (groupId, userId) => {
+    try {
+        const sql = `DELETE FROM "User_has_Group" WHERE group_group_id = $1 AND user_user_id = $2`;
+        const result = await queryDb(sql, [groupId, userId]);
+        if (result.rowCount === 0) {
+            throw new Error('User not found in the group');
+        }
+        return result.rows[0];
+    } catch (error) {
+        throw error;
+    }
+}
 // Fetch messages for a specific group
 
 exports.getMessagesByGroupId = async (groupId) => {
     const sql = `
         SELECT 
-    m.group_id, 
-    m.sender_id, 
-    m.message, 
-    m.timestamp, 
-    u.username AS sender_name
-    FROM messages m
-    JOIN "User" u ON m.sender_id = u.user_id
-    WHERE m.group_id = $1
-    ORDER BY m.timestamp ASC;
+            m.group_id, 
+            m.sender_id, 
+            m.message, 
+            m.timestamp, 
+            m.message_id,
+            u.username AS sender_name,
+            COALESCE(SUM(mv.votes), 0) AS total_votes
+        FROM messages m
+        JOIN "User" u ON m.sender_id = u.user_id
+        LEFT JOIN messagevotes mv ON m.group_id = mv.group_id AND m.message_id = mv.message_id
+        WHERE m.group_id = $1
+        GROUP BY m.group_id, m.sender_id, m.message, m.timestamp, m.message_id, u.username
+        ORDER BY m.timestamp ASC;
     `;
     const result = await queryDb(sql, [groupId]);
     return result.rows;
 };
 
 exports.addMessage = async (groupId, senderId, message) => {
-    // SQL-Abfrage für das Einfügen der Nachricht und gleichzeitiges Abrufen des Nutzernamens
+
     const sql = `
-        INSERT INTO messages (group_id, sender_id, message, timestamp) 
-        VALUES ($1, $2, $3, CURRENT_TIMESTAMP) 
+        INSERT INTO messages (group_id, sender_id, message, timestamp,type) 
+        VALUES ($1, $2, $3, CURRENT_TIMESTAMP, 'message') 
         RETURNING *, 
-                  (SELECT username FROM user WHERE user_id = $2) AS sender_name`; // Nutzername aus der Tabelle `users`
+                  (SELECT u.username FROM "User" u WHERE u.user_id = $2) AS sender_name`;
 
     const result = await queryDb(sql, [groupId, senderId, message]);
     return result.rows[0];
+};
+
+
+exports.updateMessageVote = async (groupId, messageId, userId, vote) => {
+    // Fetch the current vote for the message by the voter
+    const fetchSql = `
+        SELECT votes
+        FROM messagevotes
+        WHERE group_id = $1 AND message_id = $2 AND user_id = $3;
+    `;
+    const fetchResult = await queryDb(fetchSql, [groupId, messageId, userId]);
+    const currentVote = fetchResult.rows[0]?.votes || 0;
+
+    const newVote = currentVote === vote ? 0 : vote; // Toggle vote
+
+    // Update or insert the vote in the messagevotes table
+    const upsertSql = `
+        INSERT INTO messagevotes (group_id, message_id, user_id, timestamp, votes)
+        VALUES ($1, $2, $3, CURRENT_TIMESTAMP, $4)
+        ON CONFLICT (group_id, message_id, user_id)
+        DO UPDATE SET votes = $4, timestamp = CURRENT_TIMESTAMP
+        RETURNING *;
+    `;
+    const upsertResult = await queryDb(upsertSql, [groupId, messageId, userId, newVote]);
+
+    // Query to get the total votes
+    const totalVotesSql = `
+        SELECT SUM(votes) AS total_votes
+        FROM messagevotes
+        WHERE group_id = $1 AND message_id = $2;
+    `;
+    const totalVotesResult = await queryDb(totalVotesSql, [groupId, messageId]);
+
+    return {
+        updatedVote: upsertResult.rows[0],
+        totalVotes: totalVotesResult.rows[0].total_votes
+    };
 };
 
 exports.getMembership = async (groupId, userId) => {
@@ -192,13 +250,21 @@ exports.getMembersByGroupId = async (groupId) => {
             u.user_id, 
             u.username, 
             u.email, 
-            ug.group_requests AS status
+            ug.group_requests AS status,
+            CASE 
+                WHEN g.owners_id = u.user_id THEN true 
+                ELSE false 
+            END AS is_owner
         FROM 
             "User" u
         INNER JOIN 
             "User_has_Group" ug 
         ON 
             u.user_id = ug.user_user_id
+        INNER JOIN
+            "Group" g
+        ON
+            g.group_id = ug.group_group_id
         WHERE 
             ug.group_group_id = $1;
     `;
@@ -212,6 +278,50 @@ exports.getGroupName = async (groupId) => {
     const result = await queryDb(sql, [groupId]);
     return result.rows[0];
 }
+exports.addMovieSuggestions = async (groupId, senderId, movieId, movieTitle) => {
+    // Fetch movie details from TMDB API
+    const tmdbUrl = `https://api.themoviedb.org/3/movie/${movieId}`;
+    const tmdbResponse = await axios.get(tmdbUrl, {
+        headers: {
+            accept: 'application/json',
+            Authorization: `Bearer ${tmdbToken}`,
+        },
+    });
+
+    const posterPath = tmdbResponse.data.poster_path;
+
+    const sql = `
+        INSERT INTO messages (group_id, sender_id, message, timestamp, type, poster_path, movie_id)
+        VALUES ($1, $2, $3, CURRENT_TIMESTAMP, 'movie', $4, $5)
+        RETURNING *,
+                  (SELECT u.username FROM "User" u WHERE u.user_id = $2) AS sender_name;
+    `;
+    const result = await queryDb(sql, [groupId, senderId, movieTitle,posterPath, movieId ]);
+    return result.rows[0];
+};
+exports.getMovieMessagesByGroupId = async (groupId) => {
+    const sql = `
+        SELECT 
+            m.group_id, 
+            m.sender_id, 
+            m.message, 
+            m.timestamp, 
+            m.message_id,
+            m.poster_path,
+            m.type,
+            u.username AS sender_name,
+            COALESCE(SUM(mv.votes), 0) AS total_votes
+        FROM messages m
+        JOIN "User" u ON m.sender_id = u.user_id
+        LEFT JOIN messagevotes mv ON m.group_id = mv.group_id AND m.message_id = mv.message_id
+        WHERE m.group_id = $1 AND m.type = 'movie'
+        GROUP BY m.group_id, m.sender_id, m.message, m.timestamp, m.message_id, u.username, m.poster_path, m.type
+        ORDER BY m.timestamp ASC;
+    `;
+    const result = await queryDb(sql, [groupId]);
+    return result.rows;
+};
+
 
 
 

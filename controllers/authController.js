@@ -10,17 +10,14 @@ const onAuthorization = async (req, res) => {
     try {
         const result = await validateUser(userEmail, password);
 
-        const cookieExp = 1000 * 60 * parseInt(process.env.JWT_TOKEN_EXP.replace("m", ""));
         const refreshCookieExp = 1000 * 60 * 60 * 24 * 14;
 
-        res.cookie("accessToken", result.accessToken, {
-            httpOnly: true,
-            secure: false, 
-            sameSite: "Strict",
-            maxAge: cookieExp,
-        });
+        const authTokens = {
+            accessToken: result.accessToken,
+            refreshToken: result.refreshToken
+        };
 
-        res.cookie("refreshToken", result.refreshToken, {
+        res.cookie("tokens", authTokens, {
             httpOnly: true,
             secure: false, 
             sameSite: "Strict",

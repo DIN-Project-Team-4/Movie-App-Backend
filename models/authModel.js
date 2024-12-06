@@ -2,8 +2,6 @@ const { getAccessToken,getRefreshToken } = require('../helper/jwtHelper.js');
 const { matchPassword } = require('../helper/hashStringHelper.js');
 const { queryDb } = require('../repository/queryDatabase');
 
-
-
 const validateUser = ((userEmail, loginPassword) => {
     return new Promise(async(resolve,reject) => {
         if (!userEmail || !loginPassword) {
@@ -31,7 +29,7 @@ const validateUser = ((userEmail, loginPassword) => {
                 return;
             }
 
-            // ?if fund in database and the password matches generate the JWT token
+            // if fund in database and the password matches generate the JWT token
             //update last sucessful login date & time
             const sql = 'Update "User" Set last_login=$1 Where user_id=$2';
             await queryDb(sql, [new Date(), user_id]);

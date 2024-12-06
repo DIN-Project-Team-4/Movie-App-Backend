@@ -138,6 +138,18 @@ exports.deleteGroup = async (req, res) => {
     }
   };
 
+exports.leaveGroup = async (req, res) => {
+    const { groupId, userId } = req.params;
+
+    try {
+        const result = await groupModel.leaveGroupById(groupId, userId);
+        res.status(200).json(result);
+    } catch (error) {
+        console.error('Error leaving group:', error);
+        res.status(500).json({ error: 'Failed to leave group' });
+    }
+}
+
 exports.getMessagesByGroup = async (req, res) => {
     const { groupId } = req.params;
 
@@ -166,6 +178,21 @@ exports.addMessageToGroup = async (req, res) => {
     } catch (error) {
         console.error('Error adding message:', error);
         res.status(500).json({ error: 'Failed to add message' });
+    }
+};
+exports.updateMessage = async (req, res) => {
+    const { groupId, messageId, userId, vote } = req.body;
+
+    if (!groupId || !messageId || !userId || vote === undefined) {
+        return res.status(400).json({ error: 'Group ID, Message ID, User ID, and vote are required.' });
+    }
+
+    try {
+        const updatedMessage = await groupModel.updateMessageVote(groupId, messageId, userId, vote);
+        res.status(200).json(updatedMessage);
+    } catch (error) {
+        console.error('Error updating message:', error);
+        res.status(500).json({ error: 'Failed to update message' });
     }
 };
 
@@ -220,6 +247,33 @@ exports.getGroupsName = async (req, res) => {
         res.status(500).json({ error: 'Failed to fetch group name' });
     }
 }
+ exports.addMovieSuggestions = async (req, res) => {
+    const { groupId } = req.params;
+    const { senderId, movieId, movieTitle } = req.body;
+
+    if (!senderId || !movieId ) {
+        return res.status(400).json({ error: 'Movie ID and User ID are required.' });
+    }
+
+    try {
+        const result = await groupModel.addMovieSuggestions(groupId, senderId, movieId, movieTitle);
+        res.status(201).json({ message: 'Movie suggestion added successfully', suggestion: result });
+    } catch (error) {
+        console.error('Error adding movie suggestion:', error);
+        res.status(500).json({ error: 'Failed to add movie suggestion' });
+    }
+ }
+exports.getMovieMessagesByGroup = async (req, res) => {
+    const { groupId } = req.params;
+
+    try {
+        const messages = await groupModel.getMovieMessagesByGroupId(groupId);
+        res.status(200).json(messages);
+    } catch (error) {
+        console.error('Error fetching messages:', error);
+        res.status(500).json({ error: 'Failed to fetch messages' });
+    }
+};
 
 
 
