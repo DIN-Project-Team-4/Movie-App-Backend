@@ -18,9 +18,11 @@ router.get('/:groupId/messages', groupController.getMessagesByGroup);
 router.post('/:groupId/messages', groupController.addMessageToGroup);
 router.patch('/:groupId/messages/update', groupController.updateMessage);
 router.post('/:groupId/movies', groupController.addMovieSuggestions);
-router.get('/:group/movies', groupController.getMovieMessagesByGroup)
+router.get('/:group/movies', groupController.getMovieMessagesByGroup);
 
 router.post('/:groupId/apply', groupController.applyToJoinGroup);
+router.delete('/:groupId/reject/:userId', groupController.rejectMember);
+router.get('/:groupId/applications', groupController.getAllGroupApplications);
 router.put('/:groupId/review', groupController.reviewApplication);
 router.get('/:groupId/name', groupController.getGroupsName);
 

@@ -207,9 +207,14 @@ exports.applyToJoinGroup = async (req, res) => {
         const existingMembership = await groupModel.getMembership(groupId, userId);
 
         if (existingMembership) {
-            return res.status(400).json({ error: 'User has already applied or is a member of this group.' });
+            return res.status(400).json({ error: 'User is already a member of this group.' });
         }
+        
+        const existingApplication = await groupModel.getApplication(groupId, userId);
 
+        if (existingApplication) {
+            return res.status(400).json({ error: 'Application already exists for this user and group.' });
+        }
         const result = await groupModel.applyToGroup(groupId, userId);
 
         res.status(201).json({ message: 'Application submitted successfully', membership: result });
@@ -218,6 +223,51 @@ exports.applyToJoinGroup = async (req, res) => {
         res.status(500).json({ error: 'Failed to apply to join group.' });
     }
 };
+
+exports.rejectMember = async (req, res) => {
+    const { groupId, userId } = req.params;
+
+    try {
+        // Check if all required fields are provided
+        if (!groupId || !userId) {
+            return res.status(400).json({ error: 'groupId and userId are required.' });
+        }
+
+        // Call the model function to remove the user from the group
+        const result = await groupModel.rejectMember(groupId, userId);
+
+        // Send a success response
+        res.status(200).json(result);
+    } catch (error) {
+        // Send an error response in case of any issues
+        res.status(500).json({ error: error.message });
+    }
+};
+
+// Controller to handle fetching all applications for a group
+exports.getAllGroupApplications = async (req, res) => {
+    const { groupId } = req.params;
+
+    // Validate input
+    if (!groupId) {
+        return res.status(400).json({ error: 'Group ID is required.' });
+    }
+
+    try {
+        // Fetch all applications for the specified group
+        const applications = await groupModel.getAllApplicationsForGroup(groupId);
+
+        if (applications.length === 0) {
+            return res.status(404).json({ message: 'No applications found for this group.' });
+        }
+
+        res.status(200).json({ applications });
+    } catch (error) {
+        console.error('Error fetching group applications:', error);
+        res.status(500).json({ error: 'Failed to fetch group applications.' });
+    }
+};
+
 
 // Approve or reject a membership application
 exports.reviewApplication = async (req, res) => {

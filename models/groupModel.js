@@ -82,6 +82,12 @@ exports.addMember = async (groupId, userId, membershipId) => {
         // Execute the query with the provided parameters
         await queryDb(sql, [groupId, userId, membershipId]);
 
+        // SQL query to delete a user from the Group_applications table
+        const sql2 = `DELETE FROM "Group_applications" WHERE application_group_id = $1 AND applicant_id = $2`;
+
+        // Execute the query with the provided parameters
+        await queryDb(sql2, [groupId, userId]);
+
         // Return a success message if the operation was successful
         return { message: 'Member added to group successfully!' };
     } catch (error) {
@@ -215,23 +221,69 @@ exports.updateMessageVote = async (groupId, messageId, userId, vote) => {
 
 exports.getMembership = async (groupId, userId) => {
     const sql = `
-        SELECT * FROM User_has_Group
+        SELECT * FROM "User_has_Group"
         WHERE group_group_id = $1 AND user_user_id = $2;
+
     `;
     const result = await queryDb(sql, [groupId, userId]);
     return result.rows[0];
 };
 
+exports.getApplication = async (groupId, userId) => {
+    const sql = `
+        SELECT * FROM "Group_applications"
+        WHERE application_group_id = $1 AND applicant_id = $2;
+    `;
+    const result = await queryDb(sql, [groupId, userId]);
+    return result.rows[0]; // Return the application if it exists, null otherwise
+};
+
 // Apply to join a group
 exports.applyToGroup = async (groupId, userId) => {
     const sql = `
-        INSERT INTO User_has_Group (group_group_id, user_user_id, group_requests, joined_at)
+        INSERT INTO "Group_applications" (application_group_id, applicant_id, status, created_at)
         VALUES ($1, $2, 'pending', NOW())
         RETURNING *;
     `;
     const result = await queryDb(sql, [groupId, userId]);
     return result.rows[0];
 };
+
+// Model function to reject an application
+exports.rejectMember = async (groupId, userId) => {
+    try {
+        // SQL query to delete a user from the Group_applications table
+        const sql = `DELETE FROM "Group_applications" WHERE application_group_id = $1 AND applicant_id = $2`;
+
+        // Execute the query with the provided parameters
+        const result = await queryDb(sql, [groupId, userId]);
+
+        // If no rows were affected, return an error message
+        if (result.rowCount === 0) {
+            throw new Error('Application not found in the group.');
+        }
+
+        // Return a success message if the operation was successful
+        return { message: 'User rejected successfully!' };
+    } catch (error) {
+        // Handle any errors that occur during the query
+        console.error('Error rejecting user from group:', error);
+        throw new Error('Failed to reject user from group.');
+    }
+};
+
+// Function to get all applications for a specific group
+exports.getAllApplicationsForGroup = async (groupId) => {
+    const sql = `
+        SELECT ga.application_id, ga.application_group_id, ga.applicant_id, ga.status, ga.created_at, u.username AS applicant_name
+        FROM "Group_applications" ga
+        JOIN "User" u ON ga.applicant_id = u.user_id
+        WHERE ga.application_group_id = $1;
+    `;
+    const result = await queryDb(sql, [groupId]);
+    return result.rows; // Return all rows found
+};
+
 // Update membership status
 exports.updateMembershipStatus = async (groupId, userId, status) => {
     const sql = `
