@@ -13,6 +13,7 @@ router.get('/users/:userId/yourgroups', groupController.getGroupsByUser);
 router.get('/:groupId/members', groupController.getMembersByGroup);
 router.delete('/delete/:groupId', groupController.deleteGroup);
 router.delete('/:groupId/leave/:userId', groupController.leaveGroup);
+router.delete('/:groupId/remove/:userId', groupController.removeMember);
 
 router.get('/:groupId/messages', groupController.getMessagesByGroup);
 router.post('/:groupId/messages', groupController.addMessageToGroup);

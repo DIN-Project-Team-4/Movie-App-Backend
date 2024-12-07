@@ -115,7 +115,7 @@ exports.removeMember = async (req, res) => {
         }
 
         // Call the model function to remove the user from the group
-        const result = await groupModel.removeMember(groupId, userId);
+        const result = await groupModel.deleteMember(groupId, userId);
 
         // Send a success response
         res.status(200).json(result);
@@ -325,5 +325,16 @@ exports.getMovieMessagesByGroup = async (req, res) => {
     }
 };
 
+exports.deleteMember = async (req, res) => {
+    const { groupId, userId } = req.params;
+
+    try {
+        const result = await groupModel.deleteMember(groupId, userId);
+        res.status(200).json(result);
+    } catch (error) {
+        console.error('Error deleting member:', error);
+        res.status(500).json({ error: 'Failed to delete member' });
+    }
+};
 
 

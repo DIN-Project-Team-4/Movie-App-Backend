@@ -157,6 +157,8 @@ exports.getMessagesByGroupId = async (groupId) => {
             m.message, 
             m.timestamp, 
             m.message_id,
+            m.type,
+            m.poster_path,
             u.username AS sender_name,
             COALESCE(SUM(mv.votes), 0) AS total_votes
         FROM messages m
@@ -361,6 +363,7 @@ exports.getMovieMessagesByGroupId = async (groupId) => {
             m.message_id,
             m.poster_path,
             m.type,
+            m.movie_id,
             u.username AS sender_name,
             COALESCE(SUM(mv.votes), 0) AS total_votes
         FROM messages m
@@ -374,6 +377,23 @@ exports.getMovieMessagesByGroupId = async (groupId) => {
     return result.rows;
 };
 
-
+exports.deleteMember = async (groupId, username) => {
+    try {
+        const sql = `
+            DELETE FROM "User_has_Group"
+            USING "User"
+            WHERE "User".user_id = "User_has_Group".user_user_id
+            AND "User".username = $1
+            AND "User_has_Group".group_group_id = $2
+        `;
+        const result = await queryDb(sql, [username, groupId]);
+        if (result.rowCount === 0) {
+            throw new Error('User not found in the group');
+        }
+        return { message: 'User removed from group successfully!' };
+    } catch (error) {
+        throw error;
+    }
+}
 
 
