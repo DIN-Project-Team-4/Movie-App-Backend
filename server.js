@@ -95,4 +95,19 @@ if (process.env.SSL_ENABLE == "TRUE") {
 }
 
 
+/* Database Connection Test of Madura
 
+//To Check Database Connection
+const { dbConnection } = require('./repository/connectionDatabase');
+
+(async () => {
+  try {
+    const pool = dbConnection();
+    const result = await pool.query('SELECT NOW() AS current_time');
+    console.log("Database connected successfully:", result.rows[0]);
+  } catch (error) {
+    console.error("Database connection test failed:", error.message);
+  }
+})();
+
+*/

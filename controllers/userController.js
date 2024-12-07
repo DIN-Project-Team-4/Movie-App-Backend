@@ -121,21 +121,5 @@ const onDeleteUser = (async (req, res) => {
 });
 
 
-//Added PArt for Profile Page
-const onGetCurrentUser = async (req, res) => {
-    try {
-      // Hardcoded user ID for testing
-      const userId = 1;
-  
-      const result = await findOneUser(userId); // Existing function to fetch user by ID
-      if (!result) {
-        return res.status(404).json({ message: "User not found." });
-      }
-  
-      res.status(200).json(result);
-    } catch (error) {
-      res.status(500).json({ message: "Failed to fetch user profile.", error: error.message });
-    }
-  };
 
-module.exports = {onRegister, onFindOneUser, onFindUsers, onLastLogin,onFindOneUserbyEmail, onDeleteUser, onGetCurrentUser };
+module.exports = {onRegister, onFindOneUser, onFindUsers, onLastLogin,onFindOneUserbyEmail, onDeleteUser };
