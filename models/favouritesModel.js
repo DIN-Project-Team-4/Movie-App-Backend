@@ -39,10 +39,10 @@ const toggleFavourite = async (movieId, userId, movieName) => {
 // PREPARATION FOR FETCHING FAVOURITE LIST (NOT DONE)
 const getFavouritesByUser = async (userId) => {
     try {
-        console.log("Fetching favourites for user ID:", userId); // DEBUGGING
+        //console.log("Fetching favourites for user ID:", userId); // DEBUGGING
         const sql = 'SELECT * FROM "Favorit" WHERE user_user_id = $1';
         const result = await queryDb(sql, [userId]);
-        console.log("Query executed successfully. Result rows:", result.rows); // DEBUGGING
+        //console.log("Query executed successfully. Result rows:", result.rows); // DEBUGGING
         return result.rows;
     } catch (error) {
         console.error("Error in getFavouritesByUser:", error.message); // DEBUGGING

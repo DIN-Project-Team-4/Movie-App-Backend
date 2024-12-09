@@ -36,7 +36,25 @@ const toggleFavouriteMovie = async (req, res) => {
     }
 };
 
+// Controller to fetch all favourites for a specific user (public endpoint)
+const getFavouritesForUserId = async (req, res) => {
+    const { userId } = req.params;
+
+    if (!userId) {
+        return res.status(400).json({ error: "User ID is required" });
+    }
+
+    try {
+        const favourites = await getFavouritesByUser(userId); 
+        res.status(200).json(favourites);
+    } catch (error) {
+        console.error("Error fetching user's favourites:", error.message);
+        res.status(500).json({ error: "Internal server error" });
+    }
+};
+
 module.exports = {
     getFavourites,
     toggleFavouriteMovie,
+    getFavouritesForUserId
 };
