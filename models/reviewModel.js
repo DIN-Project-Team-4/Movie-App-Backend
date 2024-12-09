@@ -32,7 +32,7 @@ const alreadyReviewed = async (movieID, userId) => {
 // Function to get all reviews 
 const getReviews = async (movieId, viewAllReviews) => {
     movieId?.trim() !== ""? viewAllReviews : viewAllReviews=true
-    const sql = `select R.review_id, R.movie_id, R.description, R.rating, R.reviewed_at, R.movie_title, R.movie_poster_url, R.user_id, U.username from "Review" R inner join  
+    const sql = `select R.review_id, R.movie_id, R.description, R.rating, TO_CHAR(R.reviewed_at, 'DD.MM.YY  HH24:MI') AS reviewed_at,  R.movie_title, R.movie_poster_url, R.user_id, U.username from "Review" R inner join  
                 "User" U on R.user_id = U.user_id ${movieId?.trim() !== ""? "where movie_id = ($1)": ""} Order By R.reviewed_at desc ${viewAllReviews==false? "fetch first 10 rows only": ""}`
     try {
         const result = await queryDb(sql, movieId?.trim() !== ""? [movieId]: "")
