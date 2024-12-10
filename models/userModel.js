@@ -1,6 +1,8 @@
 const { queryDb } = require('../repository/queryDatabase');
 const { RandomString } = require('../helper/commonHelper.js');
 const { hashPassword } = require('../helper/hashStringHelper.js');
+const {query} = require("express");
+const { deleteGroupById } = require('./groupModel')
 
 const createUser = ((user) => {
     return new Promise(async(resolve,reject) => {
@@ -193,9 +195,19 @@ const lastLogin = ((userId) => {
 const deleteUser = ((userId) => {
     return new Promise(async(resolve, reject) => {
         try {
+            await deleteGroupsThatBelongToUser(userId)
+
+            await queryDb('DELETE FROM "Review" WHERE user_id=$1', [userId])
+            await queryDb('DELETE FROM "Favorit" WHERE user_user_id=$1', [userId])
+            await queryDb('DELETE FROM "User_has_Group" WHERE user_user_id=$1', [userId])
+            await queryDb('DELETE FROM "messages" WHERE sender_id=$1', [userId])
+            await queryDb('DELETE FROM "messagevotes" WHERE user_id=$1', [userId])
+
             // SQL query to delete the user by ID
-            const sql = `delete from "User" where user_id=$1 returning *`;
-            const dbResult = await queryDb(sql, [userId]);
+            const dbResult = await queryDb(
+                `delete from "User" where user_id=$1 returning *`,
+                [userId]
+            );
 
             if (!dbResult.rows.length) {
                 reject({ statusCode: 404, message: 'User not found.' });
@@ -210,6 +222,15 @@ const deleteUser = ((userId) => {
     });
 });
 
-
+async function deleteGroupsThatBelongToUser(userId) {
+    const dbResult = await queryDb(
+        `SELECT * FROM "Group" WHERE owners_id=$1`,
+        [userId]
+    );
+    const groups = dbResult.rows
+    for (const group of groups) {
+        await deleteGroupById(group.group_id)
+    }
+}
 
 module.exports = { createUser, findOneUser, findUsers, lastLogin, findOneUserbyEmail, deleteUser };

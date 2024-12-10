@@ -123,6 +123,24 @@ exports.removeMember = async (groupId, userId) => {
 // Function to delete a group from the database by its ID
 exports.deleteGroupById = async (groupId) => {
     try {
+        console.log('Deleting group', groupId)
+      await queryDb(
+          'DELETE FROM "Group_applications" WHERE application_group_id=$1'
+          , [groupId]
+      );
+        await queryDb(
+            'DELETE FROM "User_has_Group" WHERE group_group_id=$1'
+            , [groupId]
+        );
+        await queryDb(
+            'DELETE FROM "messages" WHERE group_id=$1'
+            , [groupId]
+        );
+        await queryDb(
+            'DELETE FROM "messagevotes" WHERE group_id=$1'
+            , [groupId]
+        );
+
       const sql = `DELETE FROM "Group" WHERE group_id = $1`;  // SQL query to delete the group
       const result = await queryDb(sql, [groupId]);
   

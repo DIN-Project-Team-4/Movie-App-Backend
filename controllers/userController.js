@@ -98,10 +98,10 @@ const onLastLogin = (async (req, res) => {
 // New controller function for deleting a user
 const onDeleteUser = (async (req, res) => {
     const userId = req.params["userId"];
-    const authenticatedUserId = req.user.id;  // Assuming the user ID is stored in req.user through authentication middleware
+    const authenticatedUserId = req.user.userId;  // Assuming the user ID is stored in req.user through authentication middleware
 
     // If the requested userId is different from the authenticated user's ID, return error
-    if (authenticatedUserId !== userId) {
+    if (String(authenticatedUserId) !== String(userId)) {
         return res.status(403).send({ message: 'You can only delete your own account.' });
     }
 
