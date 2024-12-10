@@ -5,7 +5,8 @@
     "main": "server.js",
     "scripts": {
         "dev": "nodemon server.js",
-        "test": "mocha *.test.mjs"
+        "test": "mocha *.test.mjs",
+        "build": "npm i && react-scripts build"
     },
     "author": "Indunil Liyanage,Woon,Upeksha,Jasmine,Marco,Min,Madhura",
     "license": "ISC",
