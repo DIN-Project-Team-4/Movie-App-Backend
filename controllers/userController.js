@@ -1,4 +1,4 @@
-const {createUser, findOneUser, findUsers, lastLogin,findOneUserbyEmail } = require('../models/userModel.js')
+const {createUser, findOneUser, findUsers, lastLogin,findOneUserbyEmail, deleteUser } = require('../models/userModel.js')
 
 const onRegister = (async (req, res) => {
     const requestBody = req.body;
@@ -115,6 +115,7 @@ const onDeleteUser = (async (req, res) => {
 
         res.status(200).send({ message: 'Account deleted successfully.' });
     } catch (error) {
+        console.log('Error deleting user: ', error)
         res.status(error.statusCode || 500).send({ message: error.message || 'Server error while deleting account.' });
     }
     return;

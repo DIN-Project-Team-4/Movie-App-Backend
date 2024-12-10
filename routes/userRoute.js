@@ -19,9 +19,9 @@ router.get(`${process.env.BASE_URI}/delete/:userId`, TokenInterceptor, onDeleteU
 
 
 //added part for Profile Page
-router.get('/api/test-findOneUser', async (req, res) => {
+router.get('/api/user/:userId', async (req, res) => {
     try {
-        const userId = 1; // Hardcoded for testing
+        const { userId } = req.params
         console.log("Testing findOneUser with userId:", userId);
 
         const result = await findOneUser(userId);

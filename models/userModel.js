@@ -204,6 +204,7 @@ const deleteUser = ((userId) => {
 
             resolve(true);  // Return true if deletion is successful
         } catch (error) {
+            console.log('userController delete error: ', error)
             reject({ statusCode: 500, message: error.message });
         }
     });

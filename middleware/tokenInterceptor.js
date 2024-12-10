@@ -53,7 +53,7 @@ const TokenInterceptor = async (req, res, next) => {
             return res.status(403).send({ message: "Invalid access token." });
         }
     } catch (error) {
-        //console.error("Error in TokenInterceptor:", error.message);
+        console.error("Error in TokenInterceptor:", error);
         return res.status(500).send({ message: "Internal Server Error." });
     }
 };
