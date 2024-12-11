@@ -244,7 +244,7 @@ const getMovieDetails = async (req, res) => {
     const { id } = req.params;
 
     try {
-        const movies = getMovieDetailsById(id)
+        const movies = await getMovieDetailsById(id)
         res.status(200).json(movies);
     } catch (error) {
         if (error.response) {
