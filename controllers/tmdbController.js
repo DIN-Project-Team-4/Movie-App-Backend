@@ -1,4 +1,5 @@
 const axios = require('axios');
+const {getMovieDetailsById} = require("../models/tmbdModel");
 
 const tmdbToken = process.env.TMDB_ACCESS_TOKEN;
 const BASE_URL = process.env.TMDB_API_URL;
@@ -243,18 +244,8 @@ const getMovieDetails = async (req, res) => {
     const { id } = req.params;
 
     try {
-        const response = await axios.get(`${BASE_URL}/movie/${id}`, {
-            headers: {
-                accept: 'application/json',
-                Authorization: `Bearer ${tmdbToken}`,
-            },
-            params: {
-                append_to_response: 'videos,credits',
-                language: 'en-US',
-            },
-        });
-
-        res.status(200).json(response.data);
+        const movies = getMovieDetailsById(id)
+        res.status(200).json(movies);
     } catch (error) {
         if (error.response) {
             console.error('Error fetching movie details from TMDB:', error.response.data);

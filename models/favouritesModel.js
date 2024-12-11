@@ -1,4 +1,5 @@
 const { queryDb } = require("../repository/queryDatabase.js");
+const { getMovieDetailsById } = require('./tmbdModel')
 
 // ADDING SINGLE MOVIE TO FAVOURITES
 const addToFavourites = async (movieId, addedAt, userId, movieName) => {
@@ -43,7 +44,8 @@ const getFavouritesByUser = async (userId) => {
         const sql = 'SELECT * FROM "Favorit" WHERE user_user_id = $1';
         const result = await queryDb(sql, [userId]);
         //console.log("Query executed successfully. Result rows:", result.rows); // DEBUGGING
-        return result.rows;
+        const promises = result.rows.map((row) => getMovieDetailsById(row.movie_id))
+        return await Promise.all(promises)
     } catch (error) {
         console.error("Error in getFavouritesByUser:", error.message); // DEBUGGING
         throw error;
