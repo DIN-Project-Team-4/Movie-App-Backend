@@ -22,10 +22,10 @@ router.get(`${process.env.BASE_URI}/delete/:userId`, TokenInterceptor, onDeleteU
 router.get('/api/user/:userId', async (req, res) => {
     try {
         const { userId } = req.params
-        console.log("Testing findOneUser with userId:", userId);
+        //console.log("Testing findOneUser with userId:", userId);
 
         const result = await findOneUser(userId);
-        console.log("Result from findOneUser:", result);
+        //console.log("Result from findOneUser:", result);
 
         if (!result) {
             return res.status(404).json({ message: "User not found." });

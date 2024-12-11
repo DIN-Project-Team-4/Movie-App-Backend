@@ -20,7 +20,7 @@ app.use(express.json());
 app.use(cookieParser());
 
 const corsOrigin = {
-    origin: 'https://cinescope-frontend.onrender.com',
+    origin: process.env.CORS_ALLOW_ORIGIN || 'https://cinescope-frontend.onrender.com',
     credentials: true,
     optionSuccessStatus: 200
 }
