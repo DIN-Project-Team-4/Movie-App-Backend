@@ -4,6 +4,6 @@ const express = require('express');
 const router = express.Router();
 const {onAuthorization} =require('../controllers/authController');
 
-router.post(`${process.env.BASE_URI}/sign-in`, onAuthorization); 
+router.post(`/api/v1/sign-in`, onAuthorization); 
 
 module.exports = router;

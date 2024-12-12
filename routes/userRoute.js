@@ -10,13 +10,10 @@ const {onRegister, onFindOneUser, onFindUsers,onFindOneUserbyEmail,onDeleteUser}
 const { findOneUser } = require('../models/userModel'); // Import findOneUser
 
 
-router.post(`${process.env.BASE_URI}/users`, onRegister); 
-router.get(`${process.env.BASE_URI}/users/:userId`, TokenInterceptor, onFindOneUser); 
-router.get(`${process.env.BASE_URI}/users`, TokenInterceptor, onFindUsers); 
-router.get(`${process.env.BASE_URI}/delete/:userId`, TokenInterceptor, onDeleteUser);
-//router.post(`${process.env.BASE_URI}/find-user-by-email`, AuthMiddleware, onFindOneUserbyEmail); 
-//router.get(`${process.env.BASE_URI}/users`, AuthMiddleware, onFindOneUserbyEmail); 
-
+router.post(`/api/v1/users`, onRegister); 
+router.get(`/api/v1/users/:userId`, TokenInterceptor, onFindOneUser); 
+router.get(`/api/v1/users`, TokenInterceptor, onFindUsers); 
+router.get(`/api/v1/delete/:userId`, TokenInterceptor, onDeleteUser);
 
 //added part for Profile Page
 router.get('/api/user/:userId', async (req, res) => {
